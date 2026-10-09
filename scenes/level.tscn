@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://bntmsi41ijsim"]
+
+[ext_resource type="Script" uid="uid://nik0gkfa8qky" path="res://scripts/level.gd" id="1_level"]
+[ext_resource type="Script" uid="uid://xi7gl1ydmnt0" path="res://scripts/gate.gd" id="2_gate"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="4_hud"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gate"]
+size = Vector2(16, 16)
+
+[node name="Level" type="Node2D" unique_id=54845195]
+script = ExtResource("1_level")
+
+[node name="Floor" type="TileMapLayer" parent="." unique_id=385673089]
+
+[node name="Walls" type="TileMapLayer" parent="." unique_id=1698734346]
+light_mask = 2
+
+[node name="Gate" type="StaticBody2D" parent="." unique_id=876275991]
+collision_mask = 0
+script = ExtResource("2_gate")
+
+[node name="Shape" type="CollisionShape2D" parent="Gate" unique_id=1398575117]
+shape = SubResource("RectangleShape2D_gate")
+
+[node name="Items" type="Node2D" parent="." unique_id=1361657295]
+
+[node name="Hunters" type="Node2D" parent="." unique_id=478376006]
+
+[node name="Player" parent="." unique_id=2120415562 instance=ExtResource("3_player")]
+
+[node name="Darkness" type="CanvasModulate" parent="." unique_id=1535402964]
+
+[node name="Glow" type="CanvasLayer" parent="." unique_id=1319256395]
+follow_viewport_enabled = true
+
+[node name="HUD" parent="." unique_id=1800550653 instance=ExtResource("4_hud")]

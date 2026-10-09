@@ -1,0 +1,2235 @@
+<title>Blackout Maze Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a sticky phase rail beside one long column of steps, lit like a corridor in the dark. */
+  :root {
+    color-scheme: dark;
+    --void: #0c0e14;
+    --stone: #151925;
+    --stone-2: #1b2030;
+    --wall: #2a3044;
+    --text: #e6e1d6;
+    --dim: #9298ab;
+    --lantern: #f2b84b;
+    --lantern-soft: rgba(242, 184, 75, .14);
+    --hunter: #e8695e;
+    --safe: #74d39d;
+    --safe-soft: rgba(116, 211, 157, .12);
+    --kw: #ff9f7a;
+    --str: #b9e08a;
+    --num: #c6a6ff;
+    --type: #79c7ff;
+    --cmt: #6c738a;
+    --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+  body {
+    background: var(--void);
+    color: var(--text);
+    font: 15px/1.6 var(--body);
+    padding-inline: 16px;
+  }
+  a { color: var(--lantern); }
+  a:focus-visible, button:focus-visible, input:focus-visible + .box { outline: 2px solid var(--lantern); outline-offset: 2px; }
+
+  .shell { max-width: 1100px; margin: 0 auto; padding-block: 28px 64px; }
+
+  /* hero */
+  .hero {
+    position: relative;
+    padding: 28px 24px 24px;
+    border: 1px solid var(--wall);
+    border-radius: 6px;
+    background:
+      radial-gradient(420px 260px at 12% 0%, var(--lantern-soft), transparent 70%),
+      var(--stone);
+    display: grid;
+    gap: 18px;
+  }
+  .eyebrow { margin: 0; font: 500 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+  h1 {
+    margin: 0;
+    font: 800 clamp(40px, 7vw, 72px)/.92 var(--display);
+    letter-spacing: .01em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  h1 span { color: var(--lantern); }
+  .lede { margin: 0; max-width: 62ch; color: var(--dim); }
+  .lede strong { color: var(--text); font-weight: 500; }
+
+  .meter { display: grid; gap: 8px; }
+  .meter-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .meter-count { font: 800 28px/1 var(--display); font-variant-numeric: tabular-nums; }
+  .meter-count small { font: 500 13px var(--body); color: var(--dim); margin-left: 6px; }
+  .bar { height: 10px; background: var(--void); border: 1px solid var(--wall); border-radius: 2px; overflow: hidden; display: flex; }
+  .bar i { display: block; height: 100%; background: var(--lantern); transition: width .3s ease; }
+  .ticks { position: relative; height: 18px; font: 500 10px var(--mono); color: var(--dim); }
+  .ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .ticks span.hit { color: var(--lantern); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  button {
+    font: 500 13px var(--body);
+    color: var(--text);
+    background: var(--stone-2);
+    border: 1px solid var(--wall);
+    border-radius: 4px;
+    padding: 7px 12px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--dim); }
+  button.primary { background: var(--lantern); color: var(--void); border-color: var(--lantern); font-weight: 600; }
+  button.danger { color: var(--hunter); border-color: var(--hunter); }
+  button[aria-pressed="true"] { border-color: var(--lantern); color: var(--lantern); }
+
+  .note {
+    border-left: 3px solid var(--safe);
+    background: var(--safe-soft);
+    padding: 12px 14px;
+    border-radius: 0 4px 4px 0;
+    font-size: 14px;
+  }
+  .note p { margin: 0; }
+  .note p + p { margin-top: 6px; }
+  .note code { color: var(--text); }
+
+  /* layout */
+  .layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; margin-top: 32px; align-items: start; }
+  nav.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); display: grid; gap: 2px; }
+  nav.rail a {
+    display: grid; grid-template-columns: 1fr auto; gap: 8px;
+    padding: 6px 10px; border-radius: 4px;
+    color: var(--dim); text-decoration: none; font-size: 13px;
+  }
+  nav.rail a:hover { background: var(--stone); color: var(--text); }
+  nav.rail a .c { font: 500 11px var(--mono); font-variant-numeric: tabular-nums; }
+  nav.rail a.full { color: var(--safe); }
+  nav.rail a.current { color: var(--lantern); background: var(--stone); }
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: minmax(0, 1fr); }
+    nav.rail { display: none; }
+  }
+
+  main { display: grid; gap: 40px; min-width: 0; }
+
+  /* phases */
+  .phase > header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; border-bottom: 1px solid var(--wall); padding-bottom: 8px; margin-bottom: 4px; }
+  .phase .pn { font: 500 12px var(--mono); color: var(--dim); letter-spacing: .08em; text-transform: uppercase; }
+  .phase h2 { margin: 0; font: 700 28px/1.1 var(--display); text-transform: uppercase; letter-spacing: .02em; text-wrap: balance; }
+  .phase .pc { margin-left: auto; font: 500 12px var(--mono); color: var(--dim); font-variant-numeric: tabular-nums; }
+  .phase.complete .pc { color: var(--safe); }
+  .phase .intro { margin: 10px 0 0; color: var(--dim); max-width: 65ch; }
+
+  ol.steps { list-style: none; margin: 0; padding: 0; }
+  .step { padding: 16px 0; border-bottom: 1px solid var(--stone-2); display: grid; gap: 8px; }
+  .step:last-child { border-bottom: 0; }
+  .step label { display: grid; grid-template-columns: 22px 30px minmax(0, 1fr); gap: 10px; align-items: start; cursor: pointer; }
+  .step input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .box {
+    width: 20px; height: 20px; margin-top: 2px;
+    border: 2px solid var(--wall); border-radius: 3px; background: var(--void);
+    display: grid; place-items: center;
+  }
+  .box::after { content: ""; width: 10px; height: 5px; border: solid var(--void); border-width: 0 0 2px 2px; transform: rotate(-45deg) translate(1px, -1px); opacity: 0; }
+  .step label:hover .box { border-color: var(--dim); }
+  input:checked + .box { background: var(--safe); border-color: var(--safe); }
+  input:checked + .box::after { opacity: 1; }
+  .sn { font: 500 13px/24px var(--mono); color: var(--dim); font-variant-numeric: tabular-nums; }
+  .st { font-size: 16px; font-weight: 600; line-height: 1.45; }
+  .st em { font-style: normal; font-weight: 400; color: var(--dim); }
+  .body { padding-left: 62px; display: grid; gap: 10px; min-width: 0; max-width: 72ch; }
+  .body p { margin: 0; }
+  .body ul, .body ol { margin: 0; padding-left: 20px; }
+  .body li + li { margin-top: 2px; }
+  .teach, .test { font-size: 13.5px; }
+  .teach b { color: var(--lantern); font-weight: 500; }
+  .test b { color: var(--safe); font-weight: 500; }
+  .tag { display: inline-block; font: 500 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; vertical-align: 2px; margin-left: 6px; }
+  .tag.ms { background: var(--lantern); color: var(--void); }
+  .tag.yours { background: var(--safe-soft); color: var(--safe); border: 1px solid var(--safe); }
+  .step.done .st { color: var(--dim); }
+  .step.done .body { opacity: .6; }
+  body.hide-done .step.done { display: none; }
+  body.hide-done .phase.complete { display: none; }
+
+  code { font: 13px var(--mono); color: var(--lantern); background: var(--stone); padding: 1px 5px; border-radius: 3px; overflow-wrap: anywhere; }
+  pre {
+    margin: 0; overflow-x: auto;
+    background: var(--stone); border: 1px solid var(--wall); border-radius: 4px;
+    padding: 12px 14px;
+    font: 13px/1.6 var(--mono); color: var(--text);
+    tab-size: 4;
+  }
+  pre code { background: none; padding: 0; color: inherit; font: inherit; overflow-wrap: normal; }
+  .codehead { display: flex; justify-content: space-between; gap: 8px; font: 500 11px var(--mono); color: var(--dim); margin-bottom: -4px; }
+  .k { color: var(--kw); } .s { color: var(--str); } .n { color: var(--num); } .ty { color: var(--type); } .cm { color: var(--cmt); font-style: italic; } .an { color: var(--lantern); }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--wall); border-radius: 4px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--stone-2); white-space: nowrap; }
+  thead th { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--dim); background: var(--stone); }
+  tbody th { color: var(--dim); font-weight: 500; }
+  tr:last-child td, tr:last-child th { border-bottom: 0; }
+
+  footer.help { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--wall); display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; font-size: 14px; color: var(--dim); }
+  footer.help h3 { margin: 0 0 6px; font: 700 18px var(--display); text-transform: uppercase; color: var(--text); letter-spacing: .03em; }
+  footer.help ul { margin: 0; padding-left: 18px; }
+  .key { font: 12.5px var(--mono); color: var(--dim); }
+  .key b { color: var(--type); font-weight: 500; }
+  .goal { font-size: 15px; color: var(--text); }
+  .body h4 { margin: 6px 0 -2px; font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+  ol.do, ul.how, ul.warn { margin: 0; padding-left: 22px; display: grid; gap: 5px; }
+  ol.do li::marker { color: var(--lantern); font-family: var(--mono); font-size: 12px; }
+  ul.warn li::marker { color: var(--hunter); }
+  ul.warn li { color: var(--text); }
+  pre.tree { color: var(--dim); }
+  pre.tree code { color: var(--text); }
+  .changed { border-left: 3px solid var(--lantern); background: var(--lantern-soft); padding: 12px 14px; border-radius: 0 4px 4px 0; font-size: 14px; }
+  .changed p { margin: 0; }
+  .changed ul { margin: 6px 0 0; padding-left: 18px; }
+  .note ul { margin: 6px 0 0; padding-left: 18px; }
+  .body { max-width: 78ch; }
+  .codehead { margin-bottom: -6px; }
+  .codehead span { background: var(--stone); border: 1px solid var(--wall); border-bottom: 0; border-radius: 4px 4px 0 0; padding: 3px 10px; display: inline-block; }
+</style>
+
+<div class="shell">
+  <section class="hero" aria-labelledby="title">
+    <p class="eyebrow">Godot 4.7 &middot; top-down &middot; <span id="stepTotal">46</span> steps</p>
+    <h1 id="title">Blackout <span>Maze</span></h1>
+    <p class="lede">Escape three rings of a maze in one run. <strong>Every few seconds the lights die.</strong> In the dark, purple walls shift and hunters move toward any noise you make. Each step below says exactly what to click, gives the complete code, explains how it works, and tells you how to test it.</p>
+
+    <div class="meter" aria-live="polite">
+      <div class="meter-top">
+        <div class="meter-count" id="count">0 / 46<small>steps done</small></div>
+        <div class="actions">
+          <button type="button" class="primary" id="btnNext">Go to next step</button>
+          <button type="button" id="btnHide" aria-pressed="false">Hide finished</button>
+          <button type="button" id="btnReset">Reset progress</button>
+        </div>
+      </div>
+      <div class="bar"><i id="fill" style="width:0%"></i></div>
+      <div class="ticks" id="ticks" aria-hidden="true"></div>
+    </div>
+
+    <div class="note">
+      <p><strong>How to use this guide.</strong> The finished game is in <code>maze-runner--platform-edition</code>. Treat it as your answer key, not your workspace.</p>
+      <ul>
+        <li>Build in a <b>new, empty Godot project</b> (step 1).</li>
+        <li>Code shown here is the exact code from the answer key. Some steps show a function that also contains lines from later steps; the <b>Do it</b> list says which lines to comment out for now.</li>
+        <li><b>Type the code instead of pasting it.</b> Read the <b>How it works</b> notes as you go. If you can explain a step out loud without looking, it's yours.</li>
+        <li>Godot indents with tabs; the code here shows them as 4 spaces. Press Tab in the editor.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="layout">
+    <nav class="rail" id="rail" aria-label="Phases"></nav>
+    <main id="main">
+<section class="phase" id="phase-0">
+<header><span class="pn">Phase 0</span><h2>Project setup</h2><span class="pc"></span></header>
+<ol class="steps">
+<li class="step" data-step="1">
+<label><input type="checkbox" id="s1"><span class="box"></span><span class="sn">01</span><span class="st">Create a fresh project</span></label>
+<div class="body">
+<p class="goal">A clean Godot 4.7 project to rebuild the game in, separate from the finished one.</p>
+<h4>Do it</h4><ol class="do"><li>Open Godot, click <b>Create New Project</b> (or <b>+ Create</b>). Name it something like <code>blackout-maze-mine</code>.</li><li>Renderer: <b>Forward+</b> works on Mac. Pick <b>Compatibility</b> if you plan to export to the web.</li><li>In the <b>FileSystem</b> dock (bottom left), right-click <code>res://</code> &rarr; <b>New &rarr; Folder</b> and make <code>scenes</code>, <code>scripts</code>, <code>art</code>, <code>levels</code>, <code>audio</code>, <code>tools</code> and <code>tests</code>.</li><li>Optional but smart: in a terminal, run <code>git init</code> in the project folder and commit after every step.</li></ol>
+<h4>How it works</h4><ul class="how"><li>Godot calls the project folder <code>res://</code>. Every path in code starts from there, like <code>res://scenes/player.tscn</code>.</li><li>Godot creates a hidden <code>.godot/</code> folder for imported files. Never edit it; it's rebuilt automatically.</li></ul>
+<h4>Watch out</h4><ul class="warn"><li>Don't build inside <code>maze-runner--platform-edition</code>. Keep that as your untouched answer key.</li></ul>
+</div></li>
+<li class="step" data-step="2">
+<label><input type="checkbox" id="s2"><span class="box"></span><span class="sn">02</span><span class="st">Set up the screen for pixel art</span></label>
+<div class="body">
+<p class="goal">A small 640&times;360 game screen, scaled up 2&times; in a 1280&times;720 window, with crisp pixels.</p>
+<h4>Do it</h4><ol class="do"><li><b>Project &rarr; Project Settings &rarr; General</b>. Turn on <b>Advanced Settings</b> (toggle at the top right).</li><li><b>Display &rarr; Window</b>: Viewport Width <code>640</code>, Viewport Height <code>360</code>.</li><li>Same page: Window Width Override <code>1280</code>, Window Height Override <code>720</code>.</li><li>Same page, Stretch: Mode <code>canvas_items</code>, Aspect <code>expand</code>.</li><li><b>Rendering &rarr; Textures</b>: Default Texture Filter <code>Nearest</code>.</li></ol>
+<h4>How it works</h4><ul class="how"><li>The game is designed at 640&times;360. <code>canvas_items</code> stretch scales everything up to fill the window.</li><li><b>Nearest</b> filtering keeps each pixel a sharp square instead of blurring it when scaled.</li><li>At 16 px per tile, 640&times;360 shows 40&times;22 tiles. That's why the Outer Ring (45&times;27) almost fits on one screen.</li></ul>
+<p class="test"><b>Test:</b> Press F5 later and the window should open at 1280&times;720.</p>
+</div></li>
+<li class="step" data-step="3">
+<label><input type="checkbox" id="s3"><span class="box"></span><span class="sn">03</span><span class="st">Set up the Input Map</span></label>
+<div class="body">
+<p class="goal">Named actions instead of hard-coded keys, so code says <code>"run"</code> rather than <code>KEY_SHIFT</code>.</p>
+<h4>Do it</h4><ol class="do"><li><b>Project Settings &rarr; Input Map</b> tab.</li><li>Type <code>move_left</code> in the <b>Add New Action</b> box and press <b>Add</b>. Repeat for <code>move_right</code>, <code>move_up</code>, <code>move_down</code>, <code>run</code>, <code>pause</code>.</li><li>Click the <b>+</b> next to each action and press the key: A and &larr; for move_left, D and &rarr; for move_right, W and &uarr; for move_up, S and &darr; for move_down, Shift for run, P for pause.</li></ol>
+<h4>How it works</h4><ul class="how"><li><code>Input.get_vector("move_left", "move_right", "move_up", "move_down")</code> later turns the four actions into one direction vector.</li><li>Esc already works as <code>ui_cancel</code>, a built-in action. The pause menu listens for both.</li></ul>
+<h4>Watch out</h4><ul class="warn"><li>Action names must match exactly, including underscores. A typo gives no error, the key just does nothing.</li></ul>
+</div></li>
+<li class="step" data-step="4">
+<label><input type="checkbox" id="s4"><span class="box"></span><span class="sn">04</span><span class="st">Bring in the art</span></label>
+<div class="body">
+<p class="goal">Copy only the sprites you'll use from the 0x72 DungeonTileset II pack.</p>
+<h4>Do it</h4><ol class="do"><li>Create <code>art/0x72/</code> in the FileSystem dock.</li><li>In Finder, open <code>0x72_DungeonTilesetII_v1.7/frames/</code>.</li><li>Drag in the <code>idle_anim_f0</code>&ndash;<code>f3</code> and <code>run_anim_f0</code>&ndash;<code>f3</code> files for <code>knight_m</code>, <code>big_zombie</code>, <code>ogre</code> and <code>big_demon</code> (32 files).</li><li>Also drag in <code>floor_1</code>&ndash;<code>floor_8</code>, <code>floor_stairs</code>, <code>wall_mid</code>, <code>wall_top_mid</code>, <code>chest_full_open_anim_f0</code>, <code>flask_big_yellow</code>, <code>ui_heart_full</code>, <code>ui_heart_empty</code>.</li><li>Copy the pack's <code>README</code> in too, as <code>README_0x72.txt</code>, for credit.</li></ol>
+<h4>How it works</h4><ul class="how"><li>Godot imports each PNG automatically and makes a <code>.import</code> file next to it. Leave those alone.</li><li>The knight is 16&times;28 px; the three hunters are 32&times;36, twice a tile wide. They look big and scary in 16 px corridors on purpose.</li></ul>
+<p class="key"><b>Answer key:</b> art/0x72/ (48 files)</p>
+</div></li>
+</ol></section>
+<section class="phase" id="phase-1">
+<header><span class="pn">Phase 1</span><h2>Global scripts</h2><span class="pc"></span></header>
+<p class="intro">Autoloads are scripts Godot creates once at startup and keeps alive across scene changes. Everything else talks to them, so build them first. Register each one under <b>Project Settings &rarr; Globals &rarr; Autoload</b>: pick the file, type the exact name shown, click <b>Add</b>.</p>
+<ol class="steps">
+<li class="step" data-step="5">
+<label><input type="checkbox" id="s5"><span class="box"></span><span class="sn">05</span><span class="st">Events, the signal bus <em>(autoload "Events")</em></span></label>
+<div class="body">
+<p class="goal">One place where game-wide signals live, so nodes can talk without holding references to each other.</p>
+<h4>Do it</h4><ol class="do"><li>Right-click <code>scripts/</code> &rarr; <b>New Script</b>, inherits <code>Node</code>, name <code>events.gd</code>.</li><li>Type the signals below.</li><li>Register it as an autoload named <code>Events</code>.</li></ol>
+<div class="codehead"><span>scripts/events.gd</span></div><pre><code class="gd">extends Node
+## Signal bus (autoload "Events"). Nodes talk through these without needing
+## references to each other.
+
+## The player made a sound at `pos` (running footsteps).
+signal noise_made(pos: Vector2)
+## A hunter reached the player.
+signal player_caught
+## Shifting walls changed. `cells` are the tile coordinates that changed.
+signal walls_shifted(cells: Array)
+## The exit gate opened or closed.
+signal gate_changed(is_open: bool)
+## Something was picked up ("map" or "oil").
+signal item_picked(kind: String, pos: Vector2)
+## Short message for the HUD banner.
+signal message(text: String)</code></pre>
+<h4>How it works</h4><ul class="how"><li>A hunter calls <code>Events.player_caught.emit()</code>; the level did <code>Events.player_caught.connect(_on_player_caught)</code>. Neither needs to find the other.</li><li>Signals can carry values: <code>noise_made</code> sends where the noise happened.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/events.gd</p>
+</div></li>
+<li class="step" data-step="6">
+<label><input type="checkbox" id="s6"><span class="box"></span><span class="sn">06</span><span class="st">Phase, the blackout state machine <em>(autoload "Phase")</em></span></label>
+<div class="body">
+<p class="goal">A timer-driven loop: Light &rarr; Warning &rarr; Dark &rarr; Light, broadcasting each change.</p>
+<h4>Do it</h4><ol class="do"><li>New script <code>scripts/phase.gd</code> (inherits Node). Type the code.</li><li>Register as autoload <code>Phase</code>.</li></ol>
+<div class="codehead"><span>scripts/phase.gd</span></div><pre><code class="gd">extends Node
+## The blackout cycle (autoload "Phase"): LIGHT -&gt; WARNING -&gt; DARK -&gt; LIGHT ...
+## Everything that reacts to the lights listens to `changed`.
+
+signal changed(phase: P)
+
+enum P { LIGHT, WARNING, DARK }
+
+var phase := P.LIGHT
+var blackouts := 0          # how many DARK phases have finished this level
+var times := { P.LIGHT: 6.0, P.WARNING: 1.0, P.DARK: 2.0 }
+var timer := Timer.new()
+
+
+func _ready() -&gt; void:
+    timer.one_shot = true
+    add_child(timer)
+    timer.timeout.connect(_next)
+
+
+func start(light: float, dark: float, warning := 1.0) -&gt; void:
+    times = { P.LIGHT: light, P.WARNING: warning, P.DARK: dark }
+    blackouts = 0
+    _enter(P.LIGHT)
+
+
+func stop() -&gt; void:
+    timer.stop()
+    phase = P.LIGHT
+
+
+func is_dark() -&gt; bool:
+    return phase == P.DARK
+
+
+## 0..1, how much of the current phase is left.
+func fraction_left() -&gt; float:
+    if timer.is_stopped():
+        return 0.0
+    return timer.time_left / times[phase]
+
+
+func _next() -&gt; void:
+    match phase:
+        P.LIGHT:
+            _enter(P.WARNING)
+        P.WARNING:
+            _enter(P.DARK)
+        P.DARK:
+            blackouts += 1
+            _enter(P.LIGHT)
+
+
+func _enter(p: P) -&gt; void:
+    phase = p
+    timer.start(times[p])
+    changed.emit(p)</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>enum P</code> gives the three states names. Elsewhere you write <code>Phase.P.DARK</code>.</li><li>The Timer is created in code and added as a child. Its <code>timeout</code> signal calls <code>_next()</code>, which picks the next state with <code>match</code>.</li><li><code>blackouts</code> counts finished dark phases. Wall shifts and the exit gate are scheduled from it.</li><li><code>fraction_left()</code> is 1.0 at the start of a phase and 0.0 at the end, which drives the HUD bar.</li></ul>
+<h4>Watch out</h4><ul class="warn"><li>Inside this file, refer to the states as <code>P.LIGHT</code>; from other scripts, <code>Phase.P.LIGHT</code>.</li><li>Because the Timer is a child of the autoload, pausing the game (step 40) pauses the cycle too. That's what you want.</li></ul>
+<p class="test"><b>Test:</b> Temporarily add <code>print(P.keys()[p])</code> in <code>_enter</code>, and <code>Phase.start(2, 1)</code> in any scene's <code>_ready</code>. Run it and watch LIGHT, WARNING, DARK repeat in the Output panel.</p>
+<p class="key"><b>Answer key:</b> scripts/phase.gd</p>
+</div></li>
+<li class="step" data-step="7">
+<label><input type="checkbox" id="s7"><span class="box"></span><span class="sn">07</span><span class="st">Sounds and the Sfx player <em>(autoload "Sfx")</em></span></label>
+<div class="body">
+<p class="goal">Eleven sound effects, and a helper that plays them from anywhere.</p>
+<h4>Do it</h4><ol class="do"><li>Get 11 WAV files into <code>audio/</code> named <code>step</code>, <code>rumble</code>, <code>growl</code>, <code>pickup</code>, <code>caught</code>, <code>lights_off</code>, <code>lights_on</code>, <code>tick</code>, <code>gate</code>, <code>heartbeat</code>, <code>level_clear</code>. Either make them on <a href="https://sfxr.me">sfxr.me</a> and export WAV, or copy <code>tools/make_sfx.py</code> from the answer key and run <code>python3 tools/make_sfx.py</code>.</li><li>New script <code>scripts/sfx.gd</code>, type the code, register as autoload <code>Sfx</code>.</li></ol>
+<div class="codehead"><span>scripts/sfx.gd</span></div><pre><code class="gd">extends Node
+## Sound effects (autoload "Sfx"). Sfx.play("pickup") for UI-style sounds,
+## Sfx.play_at("growl", position) for sounds that come from a place in the world.
+
+const SOUNDS := ["step", "rumble", "growl", "pickup", "caught", "lights_off", "lights_on",
+        "tick", "gate", "heartbeat", "level_clear"]
+
+var _streams := {}
+var _players: Array[AudioStreamPlayer] = []
+
+
+func _ready() -&gt; void:
+    process_mode = Node.PROCESS_MODE_ALWAYS
+    for s in SOUNDS:
+        _streams[s] = load("res://audio/%s.wav" % s)
+    for i in 8:
+        var p := AudioStreamPlayer.new()
+        add_child(p)
+        _players.append(p)
+
+
+func play(sound: String, volume_db := 0.0, pitch := 1.0) -&gt; void:
+    for p in _players:
+        if not p.playing:
+            p.stream = _streams[sound]
+            p.volume_db = volume_db
+            p.pitch_scale = pitch
+            p.play()
+            return
+
+
+## Plays a positional sound in the current scene; louder when the camera is close.
+func play_at(sound: String, pos: Vector2, volume_db := 0.0, max_distance := 320.0) -&gt; void:
+    var scene := get_tree().current_scene
+    if scene == null:
+        return
+    var p := AudioStreamPlayer2D.new()
+    p.stream = _streams[sound]
+    p.volume_db = volume_db
+    p.max_distance = max_distance
+    p.pitch_scale = randf_range(0.9, 1.1)
+    p.global_position = pos
+    p.finished.connect(p.queue_free)
+    scene.add_child(p)
+    p.play()</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>play()</code> reuses a pool of 8 players, so many sounds can overlap without creating nodes every time.</li><li><code>play_at()</code> makes an <code>AudioStreamPlayer2D</code> at a world position. It gets quieter with distance from the camera and pans left/right, so you can hear where a growl came from in the dark.</li><li><code>p.finished.connect(p.queue_free)</code> deletes the player when its sound ends.</li><li><code>PROCESS_MODE_ALWAYS</code> keeps sounds working while the game is paused.</li></ul>
+<h4>Watch out</h4><ul class="warn"><li>If a file name doesn't match the list in <code>SOUNDS</code>, Godot errors at startup with a failed <code>load</code>.</li></ul>
+<p class="test"><b>Test:</b> Call <code>Sfx.play("pickup")</code> from any <code>_ready</code> and you should hear a blip.</p>
+<p class="key"><b>Answer key:</b> scripts/sfx.gd, tools/make_sfx.py</p>
+</div></li>
+<li class="step" data-step="8">
+<label><input type="checkbox" id="s8"><span class="box"></span><span class="sn">08</span><span class="st">Game, run state and the difficulty table <em>(autoload "Game")</em></span></label>
+<div class="body">
+<p class="goal">Everything that must survive moving from one ring to the next: lives, current ring, time, and every tuning number.</p>
+<h4>Do it</h4><ol class="do"><li>New script <code>scripts/game.gd</code>, type the code, register as autoload <code>Game</code>.</li><li>The scene paths point to files you'll make later. That's fine; they're only loaded when used.</li></ol>
+<div class="codehead"><span>scripts/game.gd</span></div><pre><code class="gd">extends Node
+## Global run state (autoload "Game"). Lives here so it survives scene changes.
+
+const LEVEL_SCENE := "res://scenes/level.tscn"
+const TITLE_SCENE := "res://scenes/title.tscn"
+const END_SCENE := "res://scenes/end_screen.tscn"
+
+## One entry per ring. Tweak these numbers to tune difficulty.
+## groups: shift group id -&gt; it flips on every Nth blackout.
+const LEVELS := [
+    {
+        "name": "Outer Ring", "difficulty": "EASY", "map": "res://levels/outer_ring.gd",
+        "light": 6.0, "warning": 1.2, "dark": 2.5,
+        "gate_closes_after": 6, "gate_reopens_after": 2,
+        "hunter": "big_zombie", "hunter_speed": 42.0, "hearing": 200.0,
+        "map_mode": "full", "lantern_fuel": false,
+        "groups": {1: 1, 2: 2},
+    },
+    {
+        "name": "Inner Ring", "difficulty": "MEDIUM", "map": "res://levels/inner_ring.gd",
+        "light": 5.0, "warning": 1.0, "dark": 3.0,
+        "gate_closes_after": 4, "gate_reopens_after": 2,
+        "hunter": "ogre", "hunter_speed": 52.0, "hearing": 240.0,
+        "map_mode": "pieces", "lantern_fuel": false,
+        "groups": {1: 1, 2: 1, 3: 2, 4: 3},
+    },
+    {
+        "name": "The Core", "difficulty": "HARD", "map": "res://levels/the_core.gd",
+        "light": 4.0, "warning": 0.8, "dark": 4.0,
+        "gate_closes_after": 3, "gate_reopens_after": 2,
+        "hunter": "big_demon", "hunter_speed": 62.0, "hearing": 290.0,
+        "map_mode": "none", "lantern_fuel": true,
+        "groups": {1: 1, 2: 1, 3: 1, 4: 2},
+    },
+]
+
+const START_LIVES := 5
+
+var lives := START_LIVES
+var current_level := 0
+var map_pieces := 0
+var run_time := 0.0
+var times_caught := 0
+var result := ""            # "escaped" or "caught", read by the end screen
+var respawn_point := Vector2.ZERO
+var running := false        # true while a level is being played
+
+
+func _process(delta: float) -&gt; void:
+    if running and not get_tree().paused:
+        run_time += delta
+
+
+func level() -&gt; Dictionary:
+    return LEVELS[current_level]
+
+
+func new_run() -&gt; void:
+    lives = START_LIVES
+    current_level = 0
+    map_pieces = 0
+    run_time = 0.0
+    times_caught = 0
+    result = ""
+    _load_level()
+
+
+func next_level() -&gt; void:
+    current_level += 1
+    map_pieces = 0
+    if current_level &gt;= LEVELS.size():
+        finish("escaped")
+    else:
+        _load_level()
+
+
+func lose_life() -&gt; bool:
+    ## Returns true if the run is over.
+    lives -= 1
+    times_caught += 1
+    return lives &lt;= 0
+
+
+func finish(how: String) -&gt; void:
+    result = how
+    running = false
+    Phase.stop()
+    get_tree().change_scene_to_file.call_deferred(END_SCENE)
+
+
+func to_title() -&gt; void:
+    running = false
+    Phase.stop()
+    get_tree().change_scene_to_file.call_deferred(TITLE_SCENE)
+
+
+func _load_level() -&gt; void:
+    running = true
+    get_tree().change_scene_to_file.call_deferred(LEVEL_SCENE)</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>LEVELS</code> is the whole difficulty curve in one table. To tune the game later, you only touch these numbers.</li><li><code>groups: {1: 1, 2: 2}</code> means wall group 1 flips on every blackout and group 2 on every second one.</li><li><code>change_scene_to_file.call_deferred(...)</code> waits until the end of the frame to swap scenes, so nothing is freed while it's still running.</li><li><code>run_time</code> only counts while <code>running</code> is true and the game isn't paused.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/game.gd</p>
+</div></li>
+</ol></section>
+<section class="phase" id="phase-2">
+<header><span class="pn">Phase 2</span><h2>The player</h2><span class="pc"></span></header>
+<ol class="steps">
+<li class="step" data-step="9">
+<label><input type="checkbox" id="s9"><span class="box"></span><span class="sn">09</span><span class="st">An Art helper that builds animations in code</span></label>
+<div class="body">
+<p class="goal">One function that turns the pack's numbered PNGs into idle and run animations for any character.</p>
+<h4>Do it</h4><ol class="do"><li>New script <code>scripts/art.gd</code>. It doesn't extend anything; delete the <code>extends</code> line if Godot adds one.</li><li>Type the code. Don't register it as an autoload: <code>class_name</code> makes it available everywhere already.</li></ol>
+<div class="codehead"><span>scripts/art.gd</span></div><pre><code class="gd">class_name Art
+## Helpers for the 0x72 DungeonTileset II sprites in res://art/0x72/.
+
+
+## Builds "idle" and "run" animations from files named
+## &lt;character&gt;_idle_anim_f0..3.png and &lt;character&gt;_run_anim_f0..3.png.
+static func sprite_frames(character: String) -&gt; SpriteFrames:
+    var frames := SpriteFrames.new()
+    for anim in ["idle", "run"]:
+        frames.add_animation(anim)
+        frames.set_animation_speed(anim, 6.0 if anim == "idle" else 10.0)
+        frames.set_animation_loop(anim, true)
+        for i in 4:
+            frames.add_frame(anim, load("res://art/0x72/%s_%s_anim_f%d.png" % [character, anim, i]))
+    return frames</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>class_name Art</code> registers a global type, so any script can call <code>Art.sprite_frames("ogre")</code>.</li><li><code>static func</code> means you call it on the class itself, without making an instance.</li><li><code>"res://art/0x72/%s_%s_anim_f%d.png" % [character, anim, i]</code> fills in the blanks, building names like <code>ogre_run_anim_f2.png</code>.</li></ul>
+<h4>Watch out</h4><ul class="warn"><li>If a character is missing a frame, <code>load()</code> returns null and the sprite flickers. Check the 32 files from step 4.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/art.gd</p>
+</div></li>
+<li class="step" data-step="10">
+<label><input type="checkbox" id="s10"><span class="box"></span><span class="sn">10</span><span class="st">Player scene <em>(scenes/player.tscn)</em></span></label>
+<div class="body">
+<p class="goal">The runner: a physics body with a sprite, a small collision circle at the feet, and a camera.</p>
+<h4>Do it</h4><ol class="do"><li><b>Scene &rarr; New Scene</b> &rarr; <b>Other Node</b> &rarr; <code>CharacterBody2D</code>. Rename it <code>Player</code>.</li><li>Inspector: <b>Motion Mode</b> = <code>Floating</code>. Under <b>Collision</b>, Layer: only <b>2</b>; Mask: only <b>1</b>.</li><li>Node tab (next to Inspector) &rarr; <b>Groups</b> &rarr; add <code>player</code>.</li><li>Add child <code>AnimatedSprite2D</code>, name it <code>Sprite</code>, Position (0, -10).</li><li>Add child <code>CollisionShape2D</code>, name it <code>Shape</code>, Shape: New <code>CircleShape2D</code>, radius 5.</li><li>Add child <code>Camera2D</code>: Position Smoothing Enabled on, Speed 6.</li><li>Save as <code>scenes/player.tscn</code>. The two lanterns are added in step 20.</li></ol>
+<pre class="tree"><code>Player (CharacterBody2D)  layer 2, mask 1, Floating, group "player"
+├── Sprite (AnimatedSprite2D)   position (0, -10)
+├── Shape (CollisionShape2D)    circle r = 5
+└── Camera2D                    smoothing on, speed 6</code></pre>
+<h4>How it works</h4><ul class="how"><li><b>Floating</b> motion mode is for top-down games: no floor and no gravity, so it slides along walls in any direction.</li><li>The body's origin is at the feet; the sprite is moved up 10 px so its feet line up with the circle. That keeps collisions honest in a 3/4 view.</li><li><b>Layer 2, mask 1</b>: the player sits on layer 2 and bumps into layer 1 (walls, gate). Hunters' sight rays check only layer 1, so the player's own body never blocks them.</li></ul>
+<p class="key"><b>Answer key:</b> scenes/player.tscn</p>
+</div></li>
+<li class="step" data-step="11">
+<label><input type="checkbox" id="s11"><span class="box"></span><span class="sn">11</span><span class="st">Movement, footsteps and noise</span></label>
+<div class="body">
+<p class="goal">Walk silently, run fast and loudly, and animate.</p>
+<h4>Do it</h4><ol class="do"><li>Select the Player root, click the script icon to attach a new script, save it as <code>scripts/player.gd</code>.</li><li>Type the variables and the two functions below. The other functions come in later steps; leave them out for now, along with the <code>@onready</code> lines for <code>lantern</code> and <code>wall_light</code> and the two lines in <code>_ready</code> that use them.</li></ol>
+<div class="codehead"><span>scripts/player.gd (top)</span></div><pre><code class="gd">extends CharacterBody2D
+## The runner. Walking is silent; running is fast but makes noise hunters can hear.
+
+@export var walk_speed := 70.0
+@export var run_speed := 120.0
+## Seconds between noise pulses while running.
+@export var noise_interval := 0.25
+
+@onready var sprite: AnimatedSprite2D = $Sprite
+@onready var lantern: PointLight2D = $Lantern
+@onready var wall_light: PointLight2D = $WallLight
+@onready var camera: Camera2D = $Camera2D
+
+var frozen := false          # true during level transitions / after being caught
+var is_safe := false         # set by the level while standing in a safe room
+var invulnerable := 0.0      # seconds of grace after a respawn
+var fuel := 1.0              # lantern fuel 0..1 (only drains on Hard)
+
+var _noise_t := 0.0
+var _step_t := 0.0
+var _light_tween: Tween
+var _shake_tween: Tween</code></pre>
+<div class="codehead"><span>scripts/player.gd</span></div><pre><code class="gd">func _ready() -&gt; void:
+    sprite.sprite_frames = Art.sprite_frames("knight_m")
+    sprite.play("idle")
+    lantern.energy = 0.0
+    wall_light.energy = 0.0
+
+
+func _physics_process(delta: float) -&gt; void:
+    invulnerable = maxf(invulnerable - delta, 0.0)
+    sprite.modulate.a = 0.35 if invulnerable &gt; 0.0 and int(invulnerable * 10.0) % 2 == 0 else 1.0
+
+    if frozen:
+        velocity = Vector2.ZERO
+        sprite.play("idle")
+        return
+
+    var dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+    var running := Input.is_action_pressed("run")
+    velocity = dir * (run_speed if running else walk_speed)
+    move_and_slide()
+
+    if dir == Vector2.ZERO:
+        sprite.play("idle")
+        sprite.speed_scale = 1.0
+        return
+
+    sprite.play("run")
+    sprite.speed_scale = 1.5 if running else 1.0
+    if dir.x != 0.0:
+        sprite.flip_h = dir.x &lt; 0.0
+
+    _step_t -= delta
+    if _step_t &lt;= 0.0:
+        _step_t = 0.2 if running else 0.34
+        Sfx.play("step", -5.0 if running else -18.0, randf_range(0.85, 1.15))
+
+    if running:
+        _noise_t -= delta
+        if _noise_t &lt;= 0.0:
+            _noise_t = noise_interval
+            Events.noise_made.emit(global_position)</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>get_vector</code> returns a direction already normalised, so diagonals aren't faster.</li><li><code>velocity = ...</code> then <code>move_and_slide()</code> is the standard CharacterBody2D pattern: you set the speed, Godot handles walls.</li><li>Two countdown timers made from floats: <code>_step_t</code> for footstep sounds and <code>_noise_t</code> for noise pulses. Subtract <code>delta</code> each frame; when it hits zero, act and reset.</li><li>Running emits <code>Events.noise_made</code> 4 times a second. Hunters (step 27) decide if they're close enough to hear it.</li></ul>
+<h4>Watch out</h4><ul class="warn"><li><code>@onready var sprite: AnimatedSprite2D = $Sprite</code> only works if the child is named exactly <code>Sprite</code>.</li></ul>
+<p class="test"><b>Test:</b> Drag <code>player.tscn</code> into a temporary empty scene and press F6. The knight walks, runs with Shift and flips left and right.</p>
+<p class="key"><b>Answer key:</b> scripts/player.gd &rarr; _ready, _physics_process</p>
+</div></li>
+</ol></section>
+<section class="phase" id="phase-3">
+<header><span class="pn">Phase 3</span><h2>The maze</h2><span class="pc"></span></header>
+<ol class="steps">
+<li class="step" data-step="12">
+<label><input type="checkbox" id="s12"><span class="box"></span><span class="sn">12</span><span class="st">The tile atlas</span></label>
+<div class="body">
+<p class="goal">One 256&times;48 image holding every wall and floor tile the maze needs.</p>
+<h4>Do it</h4><ol class="do"><li>Easiest: copy <code>tools/make_tiles.py</code> from the answer key, install Pillow (<code>pip3 install pillow</code>) and run <code>python3 tools/make_tiles.py</code> from your project folder. It writes <code>art/maze_tiles.png</code>.</li><li>Or draw it yourself in Aseprite or LibreSprite, following the layout below exactly.</li></ol>
+<div class="tablewrap"><table><thead><tr><th>Row</th><th>Columns</th><th>What</th></tr></thead><tbody><tr><th>0</th><td>0&ndash;15</td><td>Normal walls. Column = mask: +1 wall to the north, +2 wall to the east, +4 wall to the west, +8 floor to the south (show bricks).</td></tr><tr><th>1</th><td>0&ndash;15</td><td>Shifting walls: same masks, tinted purple with a small rune.</td></tr><tr><th>2</th><td>0&ndash;7</td><td>Floor variants (0 is plain).</td></tr><tr><th>2</th><td>8, 9, 10</td><td>Safe-room floor (teal), exit stairs, shift-hint floor (purple corner dots).</td></tr></tbody></table></div>
+<h4>How it works</h4><ul class="how"><li>The pack's own wall tiles draw thin ridges. This maze's walls are exactly one tile thick, so full-block tiles are composed from the pack's bricks and colours instead.</li><li>Only north, east, west and "floor below" matter for the look, so 16 variants cover every case.</li><li>Shifting walls look different on purpose. Observant players learn which walls to distrust.</li></ul>
+<p class="key"><b>Answer key:</b> tools/make_tiles.py, art/maze_tiles.png</p>
+</div></li>
+<li class="step" data-step="13">
+<label><input type="checkbox" id="s13"><span class="box"></span><span class="sn">13</span><span class="st">Build the TileSet in code</span></label>
+<div class="body">
+<p class="goal">Turn the atlas into a TileSet where walls block movement and light, and floors do neither.</p>
+<h4>Do it</h4><ol class="do"><li>New script <code>scripts/maze_tiles.gd</code> (no <code>extends</code>), type the code.</li></ol>
+<div class="codehead"><span>scripts/maze_tiles.gd</span></div><pre><code class="gd">class_name MazeTiles
+## Builds the TileSet for res://art/maze_tiles.png in code (see tools/make_tiles.py
+## for the atlas layout). Wall tiles get a collision square and a light occluder,
+## so walls block both movement and the lantern's light.
+
+const SIZE := 16
+const SOURCE_ID := 0
+const WALL_ROW := 0
+const SHIFT_WALL_ROW := 1
+const FLOOR_ROW := 2
+const SAFE_FLOOR := Vector2i(8, 2)
+const EXIT_FLOOR := Vector2i(9, 2)
+const SHIFT_HINT_FLOOR := Vector2i(10, 2)
+
+## Mask bits for picking a wall tile.
+const N := 1
+const E := 2
+const W := 4
+const FACE := 8
+
+
+static func build() -&gt; TileSet:
+    var ts := TileSet.new()
+    ts.tile_size = Vector2i(SIZE, SIZE)
+    ts.add_physics_layer()
+    ts.set_physics_layer_collision_layer(0, 1)
+    ts.set_physics_layer_collision_mask(0, 0)
+    ts.add_occlusion_layer()
+    ts.set_occlusion_layer_light_mask(0, 1)
+
+    var src := TileSetAtlasSource.new()
+    src.texture = load("res://art/maze_tiles.png")
+    src.texture_region_size = Vector2i(SIZE, SIZE)
+    ts.add_source(src, SOURCE_ID)
+
+    var h := SIZE / 2.0
+    var square := PackedVector2Array([Vector2(-h, -h), Vector2(h, -h), Vector2(h, h), Vector2(-h, h)])
+    var occluder := OccluderPolygon2D.new()
+    occluder.polygon = square
+
+    for row in [WALL_ROW, SHIFT_WALL_ROW]:
+        for col in 16:
+            var coords := Vector2i(col, row)
+            src.create_tile(coords)
+            var data := src.get_tile_data(coords, 0)
+            data.add_collision_polygon(0)
+            data.set_collision_polygon_points(0, 0, square)
+            data.add_occluder_polygon(0)
+            data.set_occluder_polygon(0, 0, occluder)
+    for col in 11:
+        src.create_tile(Vector2i(col, FLOOR_ROW))
+    return ts</code></pre>
+<h4>How it works</h4><ul class="how"><li>A <b>physics layer</b> gives tiles collision. Each wall tile gets a 16&times;16 square, so the player can't walk through it.</li><li>An <b>occlusion layer</b> gives tiles light occluders. Walls cast shadows from the lantern (step 20).</li><li>Tile shapes are centred on the tile, so the square runs from (-8, -8) to (8, 8).</li><li>Floor tiles are created with <code>create_tile</code> but get no collision or occluder.</li></ul>
+<h4>Watch out</h4><ul class="warn"><li>The order matters: <code>ts.add_source(src, ...)</code> must happen before setting collision on tiles, because the tiles need to know which physics layers exist.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/maze_tiles.gd</p>
+</div></li>
+<li class="step" data-step="14">
+<label><input type="checkbox" id="s14"><span class="box"></span><span class="sn">14</span><span class="st">Write a maze as text</span></label>
+<div class="body">
+<p class="goal">A tiny hand-made test maze, in the same format as the real ones.</p>
+<h4>Do it</h4><ol class="do"><li>Create <code>levels/outer_ring.gd</code> and type a small maze like the one below. Every row must be the same length.</li><li>Put the <code>X</code> on the outer edge, next to a floor tile.</li></ol>
+<div class="codehead"><span>levels/outer_ring.gd (tiny test version)</span></div><pre><code class="gd">extends RefCounted
+
+const MAP := """
+###########X#
+#.....#.....#
+#.###.#.#1#.#
+#.#sssss#...#
+#...ss@ss.h.#
+#.#sssss#.#.#
+#...5.....#.#
+#############
+"""</code></pre>
+<div class="tablewrap"><table><thead><tr><th>Char</th><th>Meaning</th></tr></thead><tbody><tr><th><code>#</code> / <code>.</code></th><td>wall / floor</td></tr><tr><th><code>@</code></th><td>player start (inside a safe room)</td></tr><tr><th><code>X</code></th><td>exit gate, on the edge</td></tr><tr><th><code>s</code></th><td>safe-room floor</td></tr><tr><th><code>h</code> <code>m</code> <code>o</code></th><td>hunter spawn, map piece, lantern oil</td></tr><tr><th><code>1</code>&ndash;<code>4</code></th><td>shifting wall of group 1&ndash;4, <b>closed</b> at the start</td></tr><tr><th><code>5</code>&ndash;<code>8</code></th><td>shifting wall of group 1&ndash;4, <b>open</b> at the start</td></tr></tbody></table></div>
+<h4>How it works</h4><ul class="how"><li>Storing the map as a <code>const</code> in a <code>.gd</code> file means it's exported with the game automatically. A <code>.txt</code> file would need an export filter.</li><li>In code, <code>load("res://levels/outer_ring.gd").MAP</code> reads the string.</li><li>When the group flips, closed cells open and open cells close, like a sliding wall.</li></ul>
+<h4>Watch out</h4><ul class="warn"><li>A shifting wall must never be able to cut part of the maze off. With a hand-made maze, check every on/off combination yourself. Step 39's tool does it automatically.</li></ul>
+<p class="key"><b>Answer key:</b> levels/outer_ring.gd</p>
+</div></li>
+<li class="step" data-step="15">
+<label><input type="checkbox" id="s15"><span class="box"></span><span class="sn">15</span><span class="st">One Level scene for all three rings <em>(scenes/level.tscn)</em></span></label>
+<div class="body">
+<p class="goal">The scene every ring uses. It reads which ring to build from <code>Game.current_level</code>.</p>
+<h4>Do it</h4><ol class="do"><li>New Scene &rarr; <b>2D Scene</b> (a Node2D). Rename it <code>Level</code>.</li><li>Add the children in the order shown. Order is draw order: later nodes draw on top.</li><li>Select <code>Walls</code> &rarr; Inspector &rarr; <b>CanvasItem &rarr; Visibility &rarr; Light Mask</b>: turn bit 1 off and bit 2 on.</li><li>Gate: add a <code>CollisionShape2D</code> child named <code>Shape</code> with a 16&times;16 <code>RectangleShape2D</code>; set the Gate's Collision Mask to nothing.</li><li>Player: drag <code>scenes/player.tscn</code> from the FileSystem dock onto <code>Level</code> to instance it.</li><li>Glow: CanvasLayer, Layer 1, turn on <b>Follow Viewport &rarr; Enabled</b>.</li><li>Save as <code>scenes/level.tscn</code>. The HUD gets added in step 39.</li></ol>
+<pre class="tree"><code>Level (Node2D)               script: scripts/level.gd
+├── Floor (TileMapLayer)
+├── Walls (TileMapLayer)        Light Mask = 2 only
+├── Gate (StaticBody2D)         layer 1, mask none
+│   └── Shape (CollisionShape2D)  16×16 rectangle
+├── Items (Node2D)
+├── Hunters (Node2D)
+├── Player (player.tscn instance)
+├── Darkness (CanvasModulate)
+├── Glow (CanvasLayer)           layer 1, Follow Viewport on
+└── HUD (hud.tscn instance)      ← added in step 39</code></pre>
+<h4>How it works</h4><ul class="how"><li>You don't set a TileSet on the two TileMapLayers in the editor; <code>level.gd</code> assigns <code>MazeTiles.build()</code> at runtime.</li><li><code>Items</code> and <code>Hunters</code> are just folders so spawned things stay tidy in the Remote tree.</li></ul>
+<p class="key"><b>Answer key:</b> scenes/level.tscn</p>
+</div></li>
+<li class="step" data-step="16">
+<label><input type="checkbox" id="s16"><span class="box"></span><span class="sn">16</span><span class="st">Parse the map</span></label>
+<div class="body">
+<p class="goal">Turn the text map into dictionaries the rest of the code can ask questions about.</p>
+<h4>Do it</h4><ol class="do"><li>Attach a new script <code>scripts/level.gd</code> to the <code>Level</code> root.</li><li>Type the top of the file. For now, comment out the <code>HUNTER_SCENE</code> and <code>PICKUP_SCENE</code> lines (those scenes arrive in steps 26 and 34; <code>preload</code> fails if the file doesn't exist yet) and the <code>@onready</code> line for <code>hud</code> (step 39).</li><li>Type <code>_parse</code> and <code>is_wall</code>.</li></ol>
+<div class="codehead"><span>scripts/level.gd (top)</span></div><pre><code class="gd">extends Node2D
+## One ring of the maze. Reads the map for Game.current_level, paints the tiles,
+## spawns the player, hunters and items, and runs the blackout rules:
+##   * lights die on the Phase timer
+##   * on each blackout, some groups of walls flip (closed &lt;-&gt; open)
+##   * the exit gate shuts after a number of blackouts, then reopens
+
+const T := 16
+const HUNTER_SCENE := preload("res://scenes/hunter.tscn")
+const PICKUP_SCENE := preload("res://scenes/pickup.tscn")
+const DARK_COLOR := Color(0.012, 0.012, 0.022)
+const DIRS: Array[Vector2i] = [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT]
+
+@onready var floor_layer: TileMapLayer = $Floor
+@onready var walls: TileMapLayer = $Walls
+@onready var items: Node2D = $Items
+@onready var hunters: Node2D = $Hunters
+@onready var gate: StaticBody2D = $Gate
+@onready var player: CharacterBody2D = $Player
+@onready var darkness: CanvasModulate = $Darkness
+@onready var glow: CanvasLayer = $Glow
+@onready var hud: CanvasLayer = $HUD
+
+var cfg: Dictionary
+var map_size := Vector2i.ZERO
+var base := {}            # Vector2i -&gt; "#", ".", "s" or "X" (the parts that never move)
+var shift_cells := {}     # Vector2i -&gt; { "group": int, "closed_at_start": bool }
+var group_flipped := {}   # group id -&gt; bool
+var astar := AStarGrid2D.new()
+var start_cell := Vector2i.ZERO
+var exit_cell := Vector2i.ZERO
+var gate_open := true
+var hunter_speed_mult := 1.0
+var finished := false
+
+var _spawns := []         # [char, cell] for hunters and items, filled by _parse
+
+var _dark_tween: Tween
+var _heartbeat_t := 0.0
+var _was_safe := true</code></pre>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _parse(text: String) -&gt; void:
+    var rows := text.strip_edges().split("\n")
+    map_size = Vector2i(rows[0].length(), rows.size())
+    for y in rows.size():
+        var row: String = rows[y]
+        for x in row.length():
+            var c := Vector2i(x, y)
+            var ch := row[x]
+            match ch:
+                "#":
+                    base[c] = "#"
+                "s":
+                    base[c] = "s"
+                "@":
+                    base[c] = "s"
+                    start_cell = c
+                "X":
+                    base[c] = "X"
+                    exit_cell = c
+                "1", "2", "3", "4":
+                    base[c] = "."
+                    shift_cells[c] = { "group": int(ch), "closed_at_start": true }
+                "5", "6", "7", "8":
+                    base[c] = "."
+                    shift_cells[c] = { "group": int(ch) - 4, "closed_at_start": false }
+                _:
+                    base[c] = "."
+                    if ch == "h" or ch == "m" or ch == "o":
+                        _spawns.append([ch, c])
+    for g in cfg.groups:
+        group_flipped[g] = false
+
+
+func is_wall(c: Vector2i) -&gt; bool:
+    if not base.has(c):
+        return true
+    if shift_cells.has(c):
+        var s: Dictionary = shift_cells[c]
+        return s.closed_at_start != group_flipped[s.group]
+    return base[c] == "#"</code></pre>
+<h4>How it works</h4><ul class="how"><li>Cells are <code>Vector2i(x, y)</code>, used as dictionary keys. <code>base[Vector2i(3, 5)]</code> tells you what never moves at column 3, row 5.</li><li><code>@</code> is stored as <code>"s"</code> because the start is inside a safe room; its position is remembered in <code>start_cell</code>.</li><li>Digits are stored as floor in <code>base</code>, plus an entry in <code>shift_cells</code>.</li><li><code>is_wall</code> decides shifting cells with one comparison: closed at start, unless the group has flipped. <code>!=</code> works like XOR here.</li><li>Anything outside the map counts as a wall, so neighbour checks at the edges are safe.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _parse, is_wall</p>
+</div></li>
+<li class="step" data-step="17">
+<label><input type="checkbox" id="s17"><span class="box"></span><span class="sn">17</span><span class="st">Paint each tile with the right piece</span></label>
+<div class="body">
+<p class="goal">Put the correct atlas tile in every cell, based on its neighbours.</p>
+<h4>Do it</h4><ol class="do"><li>Type <code>_paint</code>.</li></ol>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _paint(c: Vector2i) -&gt; void:
+    if is_wall(c):
+        var mask := 0
+        if is_wall(c + Vector2i.UP): mask |= MazeTiles.N
+        if is_wall(c + Vector2i.RIGHT): mask |= MazeTiles.E
+        if is_wall(c + Vector2i.LEFT): mask |= MazeTiles.W
+        if not is_wall(c + Vector2i.DOWN): mask |= MazeTiles.FACE
+        var row := MazeTiles.SHIFT_WALL_ROW if shift_cells.has(c) else MazeTiles.WALL_ROW
+        walls.set_cell(c, MazeTiles.SOURCE_ID, Vector2i(mask, row))
+        floor_layer.erase_cell(c)
+        return
+    walls.erase_cell(c)
+    var tile: Vector2i
+    if base[c] == "s":
+        tile = MazeTiles.SAFE_FLOOR
+    elif base[c] == "X":
+        tile = MazeTiles.EXIT_FLOOR
+    elif shift_cells.has(c):
+        tile = MazeTiles.SHIFT_HINT_FLOOR
+    else:
+        # mostly plain floor, sometimes a cracked variant (stable per tile)
+        var h := absi(hash(c))
+        tile = Vector2i(0 if h % 10 &lt; 8 else 1 + (h &gt;&gt; 4) % 7, MazeTiles.FLOOR_ROW)
+    floor_layer.set_cell(c, MazeTiles.SOURCE_ID, tile)</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>mask |= MazeTiles.N</code> sets one bit. The finished mask is the column number in the atlas.</li><li><code>set_cell(cell, source_id, atlas_coords)</code> places a tile; <code>erase_cell</code> removes one.</li><li>Walls go on the <code>Walls</code> layer, floors on the <code>Floor</code> layer, never both on one cell.</li><li><code>absi(hash(c))</code> gives a stable "random" number per cell. The floor pattern is the same every time you play, but looks natural.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _paint</p>
+</div></li>
+<li class="step" data-step="18">
+<label><input type="checkbox" id="s18"><span class="box"></span><span class="sn">18</span><span class="st">Spawn the player and limit the camera<span class="tag ms">Milestone</span></span></label>
+<div class="body">
+<p class="goal">See and walk your maze for the first time.</p>
+<h4>Do it</h4><ol class="do"><li>Type the helpers <code>cell_center</code> and <code>world_to_cell</code>.</li><li>Type this <b>starter</b> <code>_ready</code>. It grows in later steps; the final version is in step 38.</li></ol>
+<div class="codehead"><span>scripts/level.gd (starter _ready)</span></div><pre><code class="gd">func _ready() -&gt; void:
+    cfg = Game.level()
+    var tiles := MazeTiles.build()
+    walls.tile_set = tiles
+    floor_layer.tile_set = tiles
+
+    _parse(load(cfg.map).MAP)
+    for c in base:
+        _paint(c)
+    player.global_position = cell_center(start_cell)
+
+    var cam: Camera2D = player.camera
+    cam.limit_left = 0
+    cam.limit_top = 0
+    cam.limit_right = map_size.x * T
+    cam.limit_bottom = map_size.y * T
+    cam.reset_smoothing.call_deferred()</code></pre>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func cell_center(c: Vector2i) -&gt; Vector2:
+    return Vector2(c) * T + Vector2(T / 2.0, T / 2.0)
+
+
+func world_to_cell(p: Vector2) -&gt; Vector2i:
+    return Vector2i(floori(p.x / T), floori(p.y / T))</code></pre>
+<h4>How it works</h4><ul class="how"><li>Tile (3, 5) covers pixels 48&ndash;63 across and 80&ndash;95 down. Its centre is <code>(3, 5) * 16 + (8, 8)</code>.</li><li><code>world_to_cell</code> is the reverse: divide by 16 and round down with <code>floori</code>.</li><li>Camera limits stop the view at the maze edges. <code>reset_smoothing</code> snaps the camera so it doesn't glide in from (0, 0) at the start.</li></ul>
+<h4>Watch out</h4><ul class="warn"><li><code>Game.level()</code> uses <code>current_level</code>, which starts at 0, so you can test with F6 straight away without a title screen.</li><li>If the map loads but nothing shows, check that <code>MazeTiles.build()</code> found <code>res://art/maze_tiles.png</code>.</li></ul>
+<p class="test"><b>Test:</b> Open <code>level.tscn</code> and press <b>F6</b>. You stand in a teal room and walls stop you. Turn on <b>Debug &rarr; Visible Collision Shapes</b> to see the wall squares.</p>
+<p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _ready, cell_center, world_to_cell</p>
+</div></li>
+</ol></section>
+<section class="phase" id="phase-4">
+<header><span class="pn">Phase 4</span><h2>Lights out</h2><span class="pc"></span></header>
+<ol class="steps">
+<li class="step" data-step="19">
+<label><input type="checkbox" id="s19"><span class="box"></span><span class="sn">19</span><span class="st">Darken the world on blackout</span></label>
+<div class="body">
+<p class="goal">The whole maze goes black when the Phase changes to Dark, and comes back in the Light.</p>
+<h4>Do it</h4><ol class="do"><li>In <code>_ready</code>, add <code>darkness.color = Color.WHITE</code>, <code>Phase.changed.connect(_on_phase)</code> and <code>Phase.start(cfg.light, cfg.dark, cfg.warning)</code>.</li><li>Type <code>_on_phase</code>. For now, comment out the lines calling <code>_update_gate()</code> and <code>_shift_walls()</code> (steps 33 and 22), and <code>player.set_dark</code> (step 20).</li></ol>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _on_phase(p: Phase.P) -&gt; void:
+    if finished:
+        return
+    if _dark_tween:
+        _dark_tween.kill()
+    match p:
+        Phase.P.LIGHT:
+            _dark_tween = create_tween()
+            _dark_tween.tween_property(darkness, "color", Color.WHITE, 0.35)
+            player.set_dark(false)
+            Sfx.play("lights_on", -6.0)
+            _update_gate()
+        Phase.P.WARNING:
+            # flicker: the lights are about to die
+            var step: float = cfg.warning / 6.0
+            _dark_tween = create_tween()
+            for i in 3:
+                _dark_tween.tween_property(darkness, "color", Color(0.4, 0.38, 0.45), step * 0.5)
+                _dark_tween.tween_callback(Sfx.play.bind("tick", -8.0))
+                _dark_tween.tween_property(darkness, "color", Color.WHITE, step * 1.5)
+        Phase.P.DARK:
+            _dark_tween = create_tween()
+            _dark_tween.tween_property(darkness, "color", DARK_COLOR, 0.25)
+            player.set_dark(true)
+            Sfx.play("lights_off", -2.0)
+            _shift_walls()</code></pre>
+<h4>How it works</h4><ul class="how"><li>A <b>CanvasModulate</b> multiplies the colour of everything on its canvas layer. White means normal; near-black means blackout.</li><li><code>create_tween().tween_property(darkness, "color", ..., 0.25)</code> fades it over a quarter of a second.</li><li><code>_dark_tween.kill()</code> stops a fade still running from the previous phase, so two tweens never fight.</li></ul>
+<h4>Watch out</h4><ul class="warn"><li>The dark colour is <code>Color(0.012, 0.012, 0.022)</code>. The first version used 0.035, and you could see the whole maze faintly through the blackout, which ruined the memory game.</li></ul>
+<p class="test"><b>Test:</b> F6: the screen goes black every few seconds and nothing is visible at all, including you. The lantern comes next.</p>
+<p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _on_phase</p>
+</div></li>
+<li class="step" data-step="20">
+<label><input type="checkbox" id="s20"><span class="box"></span><span class="sn">20</span><span class="st">The two-lantern trick</span></label>
+<div class="body">
+<p class="goal">A lantern that throws real shadows down corridors, while nearby walls stay readable.</p>
+<h4>Do it</h4><ol class="do"><li>Open <code>player.tscn</code>. Add a <code>PointLight2D</code> named <code>Lantern</code> at (0, -4).</li><li>Texture: <b>New GradientTexture2D</b>. Width/Height 256, Fill <b>Radial</b>, Fill From (0.5, 0.5), Fill To (1, 0.5). Gradient: warm white at 0, warm orange half-transparent at 0.5, fully transparent at 1.</li><li>Lantern: Energy 0, Shadow Enabled on, Shadow Filter PCF5, Filter Smooth 1.5. Range Item Cull Mask: bit 1 only. Shadow Item Cull Mask: bit 1 only.</li><li>Duplicate it (Ctrl/Cmd + D), name it <code>WallLight</code>: Shadow Enabled <b>off</b>, Range Item Cull Mask: bit 2 only, Texture Scale 0.6.</li><li>Back in <code>player.gd</code>, add the <code>@onready</code> lines for both lights and the two lines in <code>_ready</code> that zero their energy, then type <code>set_dark</code>.</li><li>Uncomment <code>player.set_dark(...)</code> in the level's <code>_on_phase</code>.</li></ol>
+<div class="codehead"><span>scripts/player.gd</span></div><pre><code class="gd">## Lantern on in the dark, off in daylight (it would only wash out the colours).
+func set_dark(dark: bool) -&gt; void:
+    if _light_tween:
+        _light_tween.kill()
+    _light_tween = create_tween().set_parallel()
+    _light_tween.tween_property(lantern, "energy", 1.2 if dark else 0.0, 0.3)
+    _light_tween.tween_property(wall_light, "energy", 0.8 if dark else 0.0, 0.3)</code></pre>
+<h4>How it works</h4><ul class="how"><li><b>Lantern</b> lights things on light mask 1 (floor, player, hunters, items) and casts shadows from the wall occluders.</li><li>But a wall tile sits inside its own occluder, so a shadow-casting light leaves the walls themselves black.</li><li><b>WallLight</b> has no shadows and only touches light mask 2, which is just the <code>Walls</code> layer. So walls near you stay visible, while the floor only shows what's in your line of sight.</li><li>Energy is 0 in daylight. A light adds brightness, so leaving it on would make a glowing blob around you in the light.</li></ul>
+<p class="test"><b>Test:</b> F6: in the blackout you see a warm circle around you, and shadows stretch away from corners.</p>
+<p class="key"><b>Answer key:</b> scenes/player.tscn, scripts/player.gd &rarr; set_dark</p>
+</div></li>
+<li class="step" data-step="21">
+<label><input type="checkbox" id="s21"><span class="box"></span><span class="sn">21</span><span class="st">Warning flicker<span class="tag ms">Milestone</span></span></label>
+<div class="body">
+<p class="goal">Before the lights die, they flicker three times with a tick sound, so the dark never catches you off guard.</p>
+<h4>Do it</h4><ol class="do"><li>You already typed the <code>WARNING</code> branch of <code>_on_phase</code> in step 19. Make sure it's there.</li></ol>
+<h4>How it works</h4><ul class="how"><li>The flicker fits inside <code>cfg.warning</code> seconds: 3 dips, each taking a sixth of the time to dim and three-sixths to recover.</li><li><code>tween_callback(Sfx.play.bind("tick", -8.0))</code> runs a function at that point in the tween. <code>bind</code> pre-fills its arguments.</li><li>Tween steps run one after another unless you call <code>set_parallel()</code>.</li></ul>
+<p class="test"><b>Test:</b> The lights flicker, tick, die, and come back. Your lantern shows real shadows. This is the moment it starts to feel like a game.</p>
+<p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _on_phase (WARNING)</p>
+</div></li>
+</ol></section>
+<section class="phase" id="phase-5">
+<header><span class="pn">Phase 5</span><h2>Shifting walls</h2><span class="pc"></span></header>
+<ol class="steps">
+<li class="step" data-step="22">
+<label><input type="checkbox" id="s22"><span class="box"></span><span class="sn">22</span><span class="st">Flip groups on schedule</span></label>
+<div class="body">
+<p class="goal">Each blackout, some groups of walls swap: closed parts open and open parts close.</p>
+<h4>Do it</h4><ol class="do"><li>Type <code>_shift_walls</code>. Leave out the <code>_update_astar</code> line until step 25, and the dust and shake lines until step 24.</li><li>Uncomment <code>_shift_walls()</code> in <code>_on_phase</code>.</li></ol>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _shift_walls() -&gt; void:
+    var n := Phase.blackouts   # 0 on the first blackout
+    var changed: Array[Vector2i] = []
+    for g in cfg.groups:
+        var every: int = cfg.groups[g]
+        if (n + 1) % every != 0:
+            continue
+        if not _flip_is_safe(g):
+            continue   # someone is standing where a wall would appear; try next time
+        group_flipped[g] = not group_flipped[g]
+        for c in shift_cells:
+            if shift_cells[c].group == g:
+                changed.append(c)
+    if changed.is_empty():
+        return
+
+    var to_paint := {}
+    for c in changed:
+        _update_astar(c)
+        for dy in range(-1, 2):
+            for dx in range(-1, 2):
+                var nb: Vector2i = c + Vector2i(dx, dy)
+                if base.has(nb):
+                    to_paint[nb] = true
+    for c in to_paint:
+        _paint(c)
+
+    Events.walls_shifted.emit(changed)
+    Sfx.play("rumble", -3.0)
+    player.shake(3.0, 0.6)
+    for c in changed:
+        if cell_center(c).distance_to(player.global_position) &lt; 200.0:
+            _dust(cell_center(c))</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>Phase.blackouts</code> is 0 during the first blackout. <code>(n + 1) % every</code> is 0 when it's this group's turn: every 1st, 2nd or 3rd blackout.</li><li>Flipping is just <code>group_flipped[g] = not group_flipped[g]</code>. <code>is_wall</code> already reads that.</li><li><code>to_paint</code> collects each changed cell and its 8 neighbours in a dictionary (so none is painted twice). Neighbours need repainting because a wall's look depends on what's around it.</li><li>Changing tiles with <code>set_cell</code> also updates their collision and occluders automatically.</li></ul>
+<p class="test"><b>Test:</b> Stand still near a purple wall. When the lights return, it has moved and the tile next to it changed too.</p>
+<p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _shift_walls</p>
+</div></li>
+<li class="step" data-step="23">
+<label><input type="checkbox" id="s23"><span class="box"></span><span class="sn">23</span><span class="st">Never close a wall on someone</span></label>
+<div class="body">
+<p class="goal">If a wall would appear where the player or a hunter is standing, skip that group this time.</p>
+<h4>Do it</h4><ol class="do"><li>Type <code>_flip_is_safe</code>. Until hunters exist (step 26), the hunter loop just finds nothing.</li></ol>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _flip_is_safe(g: int) -&gt; bool:
+    var blocked := {}
+    # every tile the player's body touches
+    var p := player.global_position
+    for off in [Vector2(-6, -6), Vector2(6, -6), Vector2(-6, 6), Vector2(6, 6)]:
+        blocked[world_to_cell(p + off)] = true
+    for h in hunters.get_children():
+        for c in h.occupied_cells():
+            blocked[c] = true
+    for c in shift_cells:
+        if shift_cells[c].group == g and not is_wall(c) and blocked.has(c):
+            return false
+    return true</code></pre>
+<h4>How it works</h4><ul class="how"><li>The player's collision circle can overlap up to four tiles, so all four corners (&plusmn;6 px) are checked.</li><li>Each hunter reports its current tile and the tile it's walking into (<code>occupied_cells()</code>, step 26).</li><li>Only cells that are open now and would close matter, hence <code>not is_wall(c)</code>.</li><li>Skipping is safe because the maze generator checked every on/off combination (step 37).</li></ul>
+<h4>Watch out</h4><ul class="warn"><li>Without this, the player gets stuck inside a wall and <code>move_and_slide</code> can't push them out.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _flip_is_safe</p>
+</div></li>
+<li class="step" data-step="24">
+<label><input type="checkbox" id="s24"><span class="box"></span><span class="sn">24</span><span class="st">Rumble, shake and dust<span class="tag ms">Milestone</span></span></label>
+<div class="body">
+<p class="goal">Make the shift felt: sound, a camera shake and dust where walls moved.</p>
+<h4>Do it</h4><ol class="do"><li>Add <code>shake</code> to <code>player.gd</code> and <code>_dust</code> to <code>level.gd</code>.</li><li>Make sure <code>_shift_walls</code> ends by playing <code>rumble</code>, calling <code>player.shake(3.0, 0.6)</code>, and spawning dust within 200 px.</li></ol>
+<div class="codehead"><span>scripts/player.gd</span></div><pre><code class="gd">func shake(strength := 4.0, duration := 0.4) -&gt; void:
+    if _shake_tween:
+        _shake_tween.kill()
+    _shake_tween = create_tween()
+    var steps := 8
+    for i in steps:
+        var falloff := 1.0 - float(i) / steps
+        _shake_tween.tween_property(camera, "offset",
+                Vector2(randf_range(-1, 1), randf_range(-1, 1)) * strength * falloff, duration / steps)
+    _shake_tween.tween_property(camera, "offset", Vector2.ZERO, 0.05)</code></pre>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _dust(pos: Vector2) -&gt; void:
+    var p := CPUParticles2D.new()
+    p.position = pos
+    p.one_shot = true
+    p.amount = 12
+    p.lifetime = 0.7
+    p.explosiveness = 0.9
+    p.spread = 180.0
+    p.gravity = Vector2.ZERO
+    p.initial_velocity_min = 10.0
+    p.initial_velocity_max = 35.0
+    p.scale_amount_min = 1.0
+    p.scale_amount_max = 2.0
+    p.color = Color(0.6, 0.5, 0.45, 0.8)
+    p.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+    p.emission_rect_extents = Vector2(7, 7)
+    add_child(p)
+    p.emitting = true
+    p.finished.connect(p.queue_free)</code></pre>
+<h4>How it works</h4><ul class="how"><li>The shake tweens <code>Camera2D.offset</code> through 8 random points that shrink each step, then back to zero.</li><li><code>CPUParticles2D</code> with <code>one_shot</code> and high <code>explosiveness</code> makes one puff. <code>finished.connect(queue_free)</code> cleans it up.</li></ul>
+<p class="test"><b>Test:</b> Memorise a route, wait for the dark, feel the rumble, and find the route changed when the lights come back.</p>
+<p class="key"><b>Answer key:</b> scripts/player.gd &rarr; shake, scripts/level.gd &rarr; _dust</p>
+</div></li>
+</ol></section>
+<section class="phase" id="phase-6">
+<header><span class="pn">Phase 6</span><h2>Hunters</h2><span class="pc"></span></header>
+<ol class="steps">
+<li class="step" data-step="25">
+<label><input type="checkbox" id="s25"><span class="box"></span><span class="sn">25</span><span class="st">A pathfinding grid with AStarGrid2D</span></label>
+<div class="body">
+<p class="goal">A grid that answers "what's the shortest walkable path from here to there?" for hunters.</p>
+<h4>Do it</h4><ol class="do"><li>Type <code>_setup_astar</code>, <code>_update_astar</code> and <code>random_open_cell_near</code>.</li><li>Call <code>_setup_astar()</code> in <code>_ready</code> right after <code>_parse(...)</code>.</li><li>Uncomment the <code>_update_astar(c)</code> call in <code>_shift_walls</code>.</li></ol>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _setup_astar() -&gt; void:
+    astar.region = Rect2i(Vector2i.ZERO, map_size)
+    astar.cell_size = Vector2(T, T)
+    astar.offset = Vector2(T / 2.0, T / 2.0)
+    astar.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_NEVER
+    astar.update()
+    for c in base:
+        _update_astar(c)
+
+
+func _update_astar(c: Vector2i) -&gt; void:
+    # hunters can't walk through walls, into safe rooms, or out of the exit
+    astar.set_point_solid(c, is_wall(c) or base[c] == "s" or base[c] == "X")
+
+
+func random_open_cell_near(c: Vector2i, radius: int) -&gt; Vector2i:
+    for i in 24:
+        var t := c + Vector2i(randi_range(-radius, radius), randi_range(-radius, radius))
+        if astar.is_in_boundsv(t) and not astar.is_point_solid(t):
+            return t
+    return c</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>region</code> is the map size, <code>cell_size</code> 16 px, and <code>DIAGONAL_MODE_NEVER</code> means no corner-cutting.</li><li>A <b>solid</b> point can't be walked through. Walls, safe rooms and the exit are all solid for hunters, so they never enter safe rooms or leave the maze.</li><li>When walls shift, only the changed cells need <code>set_point_solid</code> again. No re-baking needed, which is why this beats NavigationAgent2D for a tile maze.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _setup_astar, _update_astar, random_open_cell_near</p>
+</div></li>
+<li class="step" data-step="26">
+<label><input type="checkbox" id="s26"><span class="box"></span><span class="sn">26</span><span class="st">Hunter scene <em>(scenes/hunter.tscn)</em></span></label>
+<div class="body">
+<p class="goal">A hunter that knows its level, its speed and how far it can hear.</p>
+<h4>Do it</h4><ol class="do"><li>New Scene &rarr; <b>Other Node</b> &rarr; <code>Node2D</code>, named <code>Hunter</code>, in group <code>hunters</code>.</li><li>Child <code>AnimatedSprite2D</code> named <code>Sprite</code> at (0, -12).</li><li>Attach <code>scripts/hunter.gd</code>. Type the top of the file and the four functions below.</li><li>In level.gd, uncomment <code>HUNTER_SCENE</code>, type <code>_spawn</code>, and in <code>_ready</code> replace the <code>player.global_position = ...</code> line with <code>_spawn()</code>. It places the player, sets the first respawn point, and spawns hunters and items.</li></ol>
+<div class="codehead"><span>scripts/hunter.gd (top)</span></div><pre><code class="gd">extends Node2D
+## A hunter. Frozen like a statue while the lights are on. In the dark it
+## wanders, walks toward any running footsteps it hears, and chases the player
+## on sight. Hunters never enter safe rooms.
+##
+## Movement is tile-to-tile along paths from the level's AStarGrid2D, so
+## hunters never get stuck on corners.
+
+enum S { FROZEN, WANDER, HUNT, CHASE }
+
+const CATCH_DISTANCE := 10.0
+const SIGHT_RANGE := 110.0
+const CHASE_BOOST := 1.25
+
+var level: Node            # the Level node (scripts/level.gd)
+var speed := 50.0
+var hearing := 250.0
+var state := S.FROZEN
+var path: Array[Vector2i] = []
+
+var _repath_t := 0.0
+var _growl_t := 3.0
+var _eyes: Node2D
+
+@onready var sprite: AnimatedSprite2D = $Sprite</code></pre>
+<div class="codehead"><span>scripts/hunter.gd</span></div><pre><code class="gd">func setup(lvl: Node, cell: Vector2i, kind: String, spd: float, hear: float) -&gt; void:
+    level = lvl
+    speed = spd
+    hearing = hear
+    global_position = level.cell_center(cell)
+    sprite.sprite_frames = Art.sprite_frames(kind)
+    sprite.play("idle")
+    sprite.speed_scale = 0.0
+    _eyes = preload("res://scripts/hunter_eyes.gd").new()
+    level.glow.add_child(_eyes)
+
+    Phase.changed.connect(_on_phase)
+    Events.noise_made.connect(_on_noise)
+    Events.walls_shifted.connect(_on_walls_shifted)
+
+
+func _exit_tree() -&gt; void:
+    if is_instance_valid(_eyes):
+        _eyes.queue_free()
+
+
+func cell() -&gt; Vector2i:
+    return level.world_to_cell(global_position)
+
+
+## Cells this hunter occupies or is about to step into (walls must not close on them).
+func occupied_cells() -&gt; Array[Vector2i]:
+    var cells: Array[Vector2i] = [cell()]
+    if not path.is_empty():
+        cells.append(path[0])
+    return cells</code></pre>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _spawn() -&gt; void:
+    player.global_position = cell_center(start_cell)
+    Game.respawn_point = player.global_position
+    for s in _spawns:
+        var kind: String = s[0]
+        var c: Vector2i = s[1]
+        if kind == "h":
+            var hunter := HUNTER_SCENE.instantiate()
+            hunters.add_child(hunter)
+            hunter.setup(self, c, cfg.hunter, cfg.hunter_speed, cfg.hearing)
+        elif (kind == "m" and cfg.map_mode == "pieces") or (kind == "o" and cfg.lantern_fuel):
+            var pickup := PICKUP_SCENE.instantiate()
+            pickup.kind = "map" if kind == "m" else "oil"
+            pickup.position = cell_center(c)
+            items.add_child(pickup)</code></pre>
+<h4>How it works</h4><ul class="how"><li>No physics body. Hunters follow grid paths, so they can't hit walls, and catching is a distance check.</li><li><code>setup()</code> is called right after <code>add_child</code>, so <code>@onready</code> variables are ready. It connects to the global signals itself.</li><li>The eyes object is made in step 31; until then, comment out the two <code>_eyes</code> lines in <code>setup</code>.</li><li>Comment out the pickup half of <code>_spawn</code> until step 34.</li></ul>
+<p class="test"><b>Test:</b> F6: hunters stand frozen in the maze as statues.</p>
+<p class="key"><b>Answer key:</b> scenes/hunter.tscn, scripts/hunter.gd &rarr; setup</p>
+</div></li>
+<li class="step" data-step="27">
+<label><input type="checkbox" id="s27"><span class="box"></span><span class="sn">27</span><span class="st">The hunter brain</span></label>
+<div class="body">
+<p class="goal">Four states: frozen in the light, wandering in the dark, hunting a sound, chasing what it sees.</p>
+<h4>Do it</h4><ol class="do"><li>Type <code>_on_phase</code>, <code>_on_noise</code>, <code>_on_walls_shifted</code> and <code>_go</code>.</li></ol>
+<div class="codehead"><span>scripts/hunter.gd</span></div><pre><code class="gd">func _on_phase(p: Phase.P) -&gt; void:
+    if p == Phase.P.DARK:
+        state = S.WANDER
+        path.clear()
+    else:
+        state = S.FROZEN
+
+
+func _on_noise(pos: Vector2) -&gt; void:
+    if state == S.FROZEN or state == S.CHASE or level.player.is_safe:
+        return
+    if global_position.distance_to(pos) &lt; hearing:
+        state = S.HUNT
+        _go(level.world_to_cell(pos))
+
+
+func _on_walls_shifted(_cells: Array) -&gt; void:
+    if not path.is_empty():
+        _go(path.back())
+
+
+func _go(target: Vector2i) -&gt; void:
+    var from := cell()
+    var p: Array[Vector2i] = level.astar.get_id_path(from, target, true)
+    if not p.is_empty() and p[0] == from:
+        p.remove_at(0)
+    path = p</code></pre>
+<h4>How it works</h4><ul class="how"><li>This is a <b>state machine</b>: <code>state</code> holds one value from <code>enum S</code>, and each signal can move it to another.</li><li>Hearing ignores walls on purpose. Sound travels through a maze, but the hunter still has to walk the long way round.</li><li><code>astar.get_id_path(from, to, true)</code>: the <code>true</code> allows a partial path, so aiming at a safe-room tile still gets the hunter as close as possible.</li><li>The first cell of a path is where the hunter already stands, so it's removed.</li><li>After a shift, the hunter re-plans to the same destination (<code>path.back()</code>).</li></ul>
+<p class="key"><b>Answer key:</b> scripts/hunter.gd &rarr; _on_phase, _on_noise, _go</p>
+</div></li>
+<li class="step" data-step="28">
+<label><input type="checkbox" id="s28"><span class="box"></span><span class="sn">28</span><span class="st">Walk tile to tile</span></label>
+<div class="body">
+<p class="goal">Move along the path, chase on sight, catch, and growl.</p>
+<h4>Do it</h4><ol class="do"><li>Type the hunter's <code>_physics_process</code>. Until step 31, comment out the <code>_update_eyes</code> call.</li></ol>
+<div class="codehead"><span>scripts/hunter.gd</span></div><pre><code class="gd">func _physics_process(delta: float) -&gt; void:
+    var player: Node2D = level.player
+    var dist := global_position.distance_to(player.global_position)
+    _update_eyes(dist)
+
+    if state == S.FROZEN:
+        sprite.speed_scale = 0.0
+        return
+    sprite.speed_scale = 1.0
+
+    var can_see: bool = not player.is_safe and dist &lt; SIGHT_RANGE \
+            and level.has_line_of_sight(global_position, player.global_position)
+    if can_see:
+        state = S.CHASE
+    elif state == S.CHASE and (player.is_safe or dist &gt; SIGHT_RANGE * 1.6):
+        state = S.WANDER
+        path.clear()
+
+    if state == S.CHASE:
+        _repath_t -= delta
+        if _repath_t &lt;= 0.0:
+            _repath_t = 0.3
+            _go(level.world_to_cell(player.global_position))
+
+    if path.is_empty():
+        if state == S.HUNT:
+            state = S.WANDER
+        _go(level.random_open_cell_near(cell(), 8))
+
+    if not path.is_empty():
+        var target: Vector2 = level.cell_center(path[0])
+        var boost := CHASE_BOOST if state == S.CHASE else 1.0
+        var step: float = speed * level.hunter_speed_mult * boost * delta
+        var dir := target - global_position
+        if absf(dir.x) &gt; 0.1:
+            sprite.flip_h = dir.x &lt; 0.0
+        global_position = global_position.move_toward(target, step)
+        sprite.play("run")
+        if global_position.distance_to(target) &lt; 0.5:
+            path.remove_at(0)
+    else:
+        sprite.play("idle")
+
+    if dist &lt; CATCH_DISTANCE and not player.is_safe and player.invulnerable &lt;= 0.0 and not player.frozen:
+        Events.player_caught.emit()
+
+    _growl_t -= delta
+    if _growl_t &lt;= 0.0:
+        _growl_t = randf_range(2.5, 5.0)
+        Sfx.play_at("growl", global_position, -2.0, 300.0)</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>move_toward(target, step)</code> moves at most <code>step</code> pixels, so the hunter never overshoots the tile centre.</li><li>When within 0.5 px of the target tile, that tile is removed and the next becomes the target.</li><li>Frozen hunters set <code>sprite.speed_scale = 0</code>, which pauses the animation mid-frame. That's the statue effect.</li><li>Speed = base speed &times; <code>hunter_speed_mult</code> (grows when the gate shuts) &times; 1.25 while chasing.</li><li>Giving up a chase at 1.6&times; sight range (176 px), not 110, stops hunters flickering between chasing and wandering at the edge.</li></ul>
+<p class="test"><b>Test:</b> Run in the dark near a hunter. Its eyes aren't in yet, but it starts walking toward you.</p>
+<p class="key"><b>Answer key:</b> scripts/hunter.gd &rarr; _physics_process</p>
+</div></li>
+<li class="step" data-step="29">
+<label><input type="checkbox" id="s29"><span class="box"></span><span class="sn">29</span><span class="st">Sight</span></label>
+<div class="body">
+<p class="goal">A hunter sees you only if no wall is in the way.</p>
+<h4>Do it</h4><ol class="do"><li>Type <code>has_line_of_sight</code> in level.gd.</li></ol>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func has_line_of_sight(from: Vector2, to: Vector2) -&gt; bool:
+    var query := PhysicsRayQueryParameters2D.create(from, to, 1)
+    return get_world_2d().direct_space_state.intersect_ray(query).is_empty()</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>intersect_ray</code> casts an invisible line through the physics world and returns the first thing it hits, or an empty dictionary.</li><li>The last argument, <code>1</code>, is the collision mask: only layer 1 (walls and gate) can block it. The player is on layer 2, so the ray doesn't stop at the player's own body.</li><li>Physics queries must run during physics processing, which is why sight is checked in <code>_physics_process</code>.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/level.gd &rarr; has_line_of_sight</p>
+</div></li>
+<li class="step" data-step="30">
+<label><input type="checkbox" id="s30"><span class="box"></span><span class="sn">30</span><span class="st">Getting caught<span class="tag ms">Milestone</span></span></label>
+<div class="body">
+<p class="goal">Lose a life, flash red, and respawn in the last safe room with a moment of protection.</p>
+<h4>Do it</h4><ol class="do"><li>In level.gd: connect <code>Events.player_caught</code> in <code>_ready</code> and type <code>_on_player_caught</code>. Comment out the two <code>hud.</code> lines until step 39.</li><li>In player.gd: type <code>respawn</code>. The blinking while invulnerable is already in <code>_physics_process</code>.</li></ol>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _on_player_caught() -&gt; void:
+    if finished or player.frozen or player.invulnerable &gt; 0.0:
+        return
+    Sfx.play("caught")
+    player.shake(6.0, 0.5)
+    hud.flash(Color(0.8, 0.05, 0.05, 0.55))
+    player.frozen = true
+    var over := Game.lose_life()
+    hud.refresh()
+    await get_tree().create_timer(1.0).timeout
+    if over:
+        finished = true
+        Game.finish("caught")
+    else:
+        player.respawn(Game.respawn_point)
+        Events.message.emit("BACK IN THE SAFE ROOM")</code></pre>
+<div class="codehead"><span>scripts/player.gd</span></div><pre><code class="gd">func respawn(pos: Vector2) -&gt; void:
+    global_position = pos
+    velocity = Vector2.ZERO
+    invulnerable = 2.0
+    frozen = false</code></pre>
+<h4>How it works</h4><ul class="how"><li>Several hunters can touch you in the same frame. The first call sets <code>player.frozen</code>, and the check at the top makes every other call return.</li><li><code>await get_tree().create_timer(1.0).timeout</code> pauses this function for a second without freezing the game.</li><li><code>Game.lose_life()</code> returns true when you're out of lives; then <code>Game.finish("caught")</code> goes to the end screen.</li></ul>
+<p class="test"><b>Test:</b> In the dark, run into a hunter's path. You flash, freeze, then reappear in a teal room and blink for 2 seconds.</p>
+<p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _on_player_caught, scripts/player.gd &rarr; respawn</p>
+</div></li>
+<li class="step" data-step="31">
+<label><input type="checkbox" id="s31"><span class="box"></span><span class="sn">31</span><span class="st">Glowing eyes</span></label>
+<div class="body">
+<p class="goal">Two red dots that stay visible in the dark, so you can track hunters.</p>
+<h4>Do it</h4><ol class="do"><li>New script <code>scripts/hunter_eyes.gd</code>, type it.</li><li>In hunter.gd, uncomment the <code>_eyes</code> lines in <code>setup</code>, type <code>_update_eyes</code>, and call it from <code>_physics_process</code>.</li></ol>
+<div class="codehead"><span>scripts/hunter_eyes.gd</span></div><pre><code class="gd">extends Node2D
+## Two glowing red eyes drawn on the Glow layer above the darkness.
+
+var facing_left := false:
+    set(value):
+        if value != facing_left:
+            facing_left = value
+            queue_redraw()
+
+
+func _process(_delta: float) -&gt; void:
+    # a slow pulse so they feel alive
+    modulate.a = 0.75 + 0.25 * sin(Time.get_ticks_msec() * 0.006)
+
+
+func _draw() -&gt; void:
+    var shift := -2.0 if facing_left else 2.0
+    for x in [-3.0, 3.0]:
+        draw_circle(Vector2(x + shift, 0), 3.0, Color(1, 0.15, 0.1, 0.25))
+        draw_rect(Rect2(x + shift - 1, -0.5, 2, 1.5), Color(1, 0.35, 0.25))</code></pre>
+<div class="codehead"><span>scripts/hunter.gd</span></div><pre><code class="gd">## Glowing eyes live on a layer the darkness doesn't touch, so you can spot
+## hunters in the dark (and see when they freeze).
+func _update_eyes(dist: float) -&gt; void:
+    if not is_instance_valid(_eyes):
+        return
+    _eyes.global_position = global_position + Vector2(0, -20)
+    _eyes.visible = Phase.phase != Phase.P.LIGHT and dist &lt; 240.0
+    _eyes.facing_left = sprite.flip_h</code></pre>
+<h4>How it works</h4><ul class="how"><li>The darkness is a CanvasModulate on the main canvas. It doesn't affect other <b>CanvasLayers</b>, so eyes drawn on <code>Glow</code> stay bright.</li><li><b>Follow Viewport</b> makes the Glow layer scroll with the camera, so world positions line up.</li><li>The eyes aren't children of the hunter (they live on another layer), so the hunter frees them in <code>_exit_tree</code>.</li><li>A setter on <code>facing_left</code> calls <code>queue_redraw()</code> only when the value changes.</li></ul>
+<p class="test"><b>Test:</b> In the dark, pairs of red eyes appear and freeze when the lights come back.</p>
+<p class="key"><b>Answer key:</b> scripts/hunter_eyes.gd, scripts/hunter.gd &rarr; _update_eyes</p>
+</div></li>
+<li class="step" data-step="32">
+<label><input type="checkbox" id="s32"><span class="box"></span><span class="sn">32</span><span class="st">Growls, heartbeat and safe rooms</span></label>
+<div class="body">
+<p class="goal">Hear hunters before you see them, and know when you're safe.</p>
+<h4>Do it</h4><ol class="do"><li>Type the level's <code>_physics_process</code>. Comment out the fuel and exit parts until steps 36 and 38.</li></ol>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _physics_process(delta: float) -&gt; void:
+    if finished:
+        return
+    var pc := world_to_cell(player.global_position)
+    player.is_safe = base.get(pc, "#") == "s"
+    if player.is_safe:
+        Game.respawn_point = cell_center(pc)
+        if not _was_safe:
+            Events.message.emit("SAFE ROOM")
+    _was_safe = player.is_safe
+
+    if cfg.lantern_fuel:
+        player.set_fuel(player.fuel - delta / 50.0)
+
+    if gate_open and pc == exit_cell:
+        _complete()
+        return
+
+    # heartbeat when a moving hunter is close
+    _heartbeat_t -= delta
+    if Phase.is_dark() and _heartbeat_t &lt;= 0.0:
+        var nearest := INF
+        for h in hunters.get_children():
+            nearest = minf(nearest, h.global_position.distance_to(player.global_position))
+        if nearest &lt; 120.0:
+            Sfx.play("heartbeat", lerpf(0.0, -14.0, nearest / 120.0))
+            _heartbeat_t = lerpf(0.45, 1.0, nearest / 120.0)</code></pre>
+<h4>How it works</h4><ul class="how"><li>Growls come from each hunter's <code>_physics_process</code> via <code>Sfx.play_at</code>, every 2.5&ndash;5 s.</li><li>The heartbeat finds the nearest hunter. Under 120 px it plays, louder and faster the closer it is: <code>lerpf(0.45, 1.0, nearest / 120.0)</code> seconds between beats.</li><li>Safe rooms need no Area2D: if the player's tile is <code>"s"</code>, they're safe and that tile becomes the respawn point.</li><li><code>_was_safe</code> remembers last frame, so "SAFE ROOM" only shows when you walk in.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _physics_process</p>
+</div></li>
+</ol></section>
+<section class="phase" id="phase-7">
+<header><span class="pn">Phase 7</span><h2>Maze rules</h2><span class="pc"></span></header>
+<ol class="steps">
+<li class="step" data-step="33">
+<label><input type="checkbox" id="s33"><span class="box"></span><span class="sn">33</span><span class="st">The exit gate</span></label>
+<div class="body">
+<p class="goal">An exit that shuts after a few blackouts, reopens later, and makes hunters faster each time it shuts.</p>
+<h4>Do it</h4><ol class="do"><li>Attach <code>scripts/gate.gd</code> to the Gate node and type it.</li><li>In level.gd, type <code>_update_gate</code> and <code>blackouts_until_gate_change</code>. In <code>_ready</code>, add <code>gate.position = cell_center(exit_cell)</code> and <code>gate.set_open(true, true)</code>. Uncomment <code>_update_gate()</code> in <code>_on_phase</code>.</li></ol>
+<div class="codehead"><span>scripts/gate.gd</span></div><pre><code class="gd">extends StaticBody2D
+## The exit gate. Blocks the exit tile while shut; the level opens and closes
+## it on a blackout schedule.
+
+@onready var shape: CollisionShape2D = $Shape
+
+var is_open := true
+var _bars_y := -14.0   # how far the bars are raised (-14 = open, 0 = shut)
+
+
+func set_open(open: bool, instant := false) -&gt; void:
+    is_open = open
+    shape.set_deferred("disabled", open)
+    var target := -14.0 if open else 0.0
+    if instant:
+        _bars_y = target
+        queue_redraw()
+    else:
+        create_tween().tween_method(_set_bars, _bars_y, target, 0.25 if not open else 0.8)
+
+
+func _set_bars(y: float) -&gt; void:
+    _bars_y = y
+    queue_redraw()
+
+
+func _draw() -&gt; void:
+    # frame
+    draw_rect(Rect2(-8, -8, 16, 2), Color(0.29, 0.23, 0.22))
+    # iron bars, raised by _bars_y and clipped to the doorway
+    var top := -8.0
+    var bottom := 8.0 + _bars_y
+    if bottom &gt; top + 1.0:
+        for x in [-6.0, -2.0, 2.0, 6.0]:
+            draw_rect(Rect2(x - 0.75, top, 1.5, bottom - top), Color(0.55, 0.57, 0.62))
+        draw_rect(Rect2(-8, bottom - 2.0, 16, 2), Color(0.38, 0.4, 0.45))
+    if is_open:
+        # a faint green glow on the stairs so the exit reads as "go"
+        draw_circle(Vector2.ZERO, 6.0, Color(0.4, 1.0, 0.6, 0.18))</code></pre>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _update_gate() -&gt; void:
+    var cycle: int = cfg.gate_closes_after + cfg.gate_reopens_after
+    var open: bool = Phase.blackouts % cycle &lt; cfg.gate_closes_after
+    if open == gate_open:
+        return
+    gate_open = open
+    gate.set_open(open)
+    Sfx.play_at("gate", gate.global_position, 4.0, 2000.0)
+    Events.gate_changed.emit(open)
+    if open:
+        Events.message.emit("THE GATE IS OPEN")
+    else:
+        hunter_speed_mult = minf(hunter_speed_mult * 1.15, 1.6)
+        Events.message.emit("THE GATE HAS SHUT  -  HUNTERS GROW FASTER")
+
+
+## Number of blackouts until the gate changes state (for the HUD).
+func blackouts_until_gate_change() -&gt; int:
+    var cycle: int = cfg.gate_closes_after + cfg.gate_reopens_after
+    var pos := Phase.blackouts % cycle
+    if gate_open:
+        return cfg.gate_closes_after - pos
+    return cycle - pos</code></pre>
+<h4>How it works</h4><ul class="how"><li>The gate cycle is <code>closes_after + reopens_after</code> blackouts long. Open while the position in the cycle is below <code>closes_after</code>.</li><li><code>shape.set_deferred("disabled", open)</code> changes collision safely. Changing physics shapes directly during a physics callback can error.</li><li>The bars are drawn with <code>_draw()</code>. <code>tween_method</code> animates <code>_bars_y</code>, and each change calls <code>queue_redraw()</code>.</li><li>The gate is also on layer 1, so a shut gate blocks sight too.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/gate.gd, scripts/level.gd &rarr; _update_gate</p>
+</div></li>
+<li class="step" data-step="34">
+<label><input type="checkbox" id="s34"><span class="box"></span><span class="sn">34</span><span class="st">Map pieces and oil <em>(scenes/pickup.tscn)</em></span></label>
+<div class="body">
+<p class="goal">Collectibles: chests that reveal the map (Medium), flasks that refill the lantern (Hard).</p>
+<h4>Do it</h4><ol class="do"><li>New Scene, root <code>Area2D</code> named <code>Pickup</code>. Collision Layer: none. Mask: only <b>2</b>.</li><li>Children: <code>Sprite2D</code> named <code>Sprite</code>, and <code>CollisionShape2D</code> named <code>Shape</code> with a circle of radius 7.</li><li>Attach <code>scripts/pickup.gd</code> and type it. Save as <code>scenes/pickup.tscn</code>.</li><li>In level.gd, uncomment <code>PICKUP_SCENE</code> and the pickup half of <code>_spawn</code>, connect <code>Events.item_picked</code> in <code>_ready</code>, and type <code>_on_item_picked</code>.</li></ol>
+<div class="codehead"><span>scripts/pickup.gd</span></div><pre><code class="gd">extends Area2D
+## A map piece (chest) or lantern oil (flask). Touch it to collect.
+
+@export_enum("map", "oil") var kind := "map"
+
+@onready var sprite: Sprite2D = $Sprite
+
+var _t := randf() * TAU
+
+
+func _ready() -&gt; void:
+    sprite.texture = load("res://art/0x72/chest_full_open_anim_f0.png" if kind == "map"
+            else "res://art/0x72/flask_big_yellow.png")
+    body_entered.connect(_on_body_entered)
+
+
+func _process(delta: float) -&gt; void:
+    _t += delta * 3.0
+    sprite.position.y = -4.0 + sin(_t) * 1.5
+
+
+func _on_body_entered(body: Node2D) -&gt; void:
+    if not body.is_in_group("player"):
+        return
+    Sfx.play("pickup", -4.0)
+    Events.item_picked.emit(kind, global_position)
+    queue_free()</code></pre>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _on_item_picked(kind: String, _pos: Vector2) -&gt; void:
+    if kind == "map":
+        Game.map_pieces += 1
+        Events.message.emit("MAP PIECE FOUND")
+    elif kind == "oil":
+        player.set_fuel(player.fuel + 0.5)
+        Events.message.emit("LANTERN REFILLED")
+    hud.refresh()</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>@export_enum("map", "oil")</code> shows a dropdown in the Inspector. The level sets it in code before adding the pickup.</li><li>Mask 2 means the area only notices bodies on layer 2, which is just the player.</li><li>Each ring only spawns what it uses: map pieces when <code>map_mode == "pieces"</code>, oil when <code>lantern_fuel</code> is on.</li></ul>
+<p class="key"><b>Answer key:</b> scenes/pickup.tscn, scripts/pickup.gd</p>
+</div></li>
+<li class="step" data-step="35">
+<label><input type="checkbox" id="s35"><span class="box"></span><span class="sn">35</span><span class="st">The memory map</span></label>
+<div class="body">
+<p class="goal">A minimap that only updates where you've been, so after a shift it shows the old maze.</p>
+<h4>Do it</h4><ol class="do"><li>Type <code>scripts/minimap.gd</code>. It's attached to a Control in the HUD (step 39).</li></ol>
+<div class="codehead"><span>scripts/minimap.gd</span></div><pre><code class="gd">extends Control
+## The memory map. It only updates the tiles you've been near, so after the
+## walls shift it shows how the maze USED to look until you see it again.
+##   full   (Easy)   - starts with the whole maze remembered
+##   pieces (Medium) - starts blank; map pieces reveal big areas
+##   none   (Hard)   - hidden
+
+const PX := 2               # screen pixels per tile
+const SEE_RADIUS := 4       # tiles remembered around the player
+
+var level: Node
+var memory := {}            # Vector2i -&gt; 0 floor, 1 wall, 2 safe, 3 exit
+var _t := 0.0
+
+
+func setup(lvl: Node) -&gt; void:
+    level = lvl
+    visible = level.cfg.map_mode != "none"
+    custom_minimum_size = Vector2(level.map_size) * PX
+    size = custom_minimum_size
+    if level.cfg.map_mode == "full":
+        for c in level.base:
+            _remember(c)
+    Events.item_picked.connect(_on_item_picked)
+
+
+func _on_item_picked(kind: String, pos: Vector2) -&gt; void:
+    if kind == "map":
+        reveal(level.world_to_cell(pos), 10)
+
+
+func reveal(center: Vector2i, radius: int) -&gt; void:
+    for y in range(-radius, radius + 1):
+        for x in range(-radius, radius + 1):
+            if x * x + y * y &lt;= radius * radius:
+                var c := center + Vector2i(x, y)
+                if level.base.has(c):
+                    _remember(c)
+
+
+func _remember(c: Vector2i) -&gt; void:
+    if level.is_wall(c):
+        memory[c] = 1
+    else:
+        memory[c] = {"s": 2, "X": 3}.get(level.base[c], 0)
+
+
+func _process(delta: float) -&gt; void:
+    if not visible or level == null:
+        return
+    _t -= delta
+    if _t &lt;= 0.0:
+        _t = 0.2
+        reveal(level.world_to_cell(level.player.global_position), SEE_RADIUS)
+    queue_redraw()
+
+
+func _draw() -&gt; void:
+    if level == null:
+        return
+    draw_rect(Rect2(Vector2(-2, -2), size + Vector2(4, 4)), Color(0, 0, 0, 0.55))
+    var colors := [Color(0.3, 0.26, 0.26, 0.9), Color(0.75, 0.66, 0.58), Color(0.3, 0.6, 0.6), Color(0.4, 1, 0.6)]
+    for c in memory:
+        draw_rect(Rect2(Vector2(c) * PX, Vector2(PX, PX)), colors[memory[c]])
+    if Time.get_ticks_msec() / 250 % 2 == 0:
+        var pc: Vector2 = level.player.global_position / level.T * PX
+        draw_rect(Rect2(pc - Vector2(1.5, 1.5), Vector2(3, 3)), Color(1, 0.85, 0.3))</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>memory</code> maps each remembered tile to a number: 0 floor, 1 wall, 2 safe, 3 exit.</li><li>Every 0.2 s it copies the <b>real</b> tiles within 4 tiles of you. Tiles you haven't revisited keep their old value, so it shows the maze as it used to be.</li><li><code>_draw()</code> paints a 2&times;2 rectangle per tile; <code>queue_redraw()</code> every frame keeps the blinking player dot moving.</li><li>Easy remembers everything at the start, Medium starts blank (map pieces reveal radius 10), Hard hides the map.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/minimap.gd</p>
+</div></li>
+<li class="step" data-step="36">
+<label><input type="checkbox" id="s36"><span class="box"></span><span class="sn">36</span><span class="st">Lantern fuel <em>(Hard)</em></span></label>
+<div class="body">
+<p class="goal">On the last ring, the lantern shrinks over time unless you find oil.</p>
+<h4>Do it</h4><ol class="do"><li>Type <code>set_fuel</code> in player.gd, and add <code>player.set_fuel(1.0)</code> to the level's <code>_ready</code>.</li><li>Uncomment the fuel line in the level's <code>_physics_process</code>.</li></ol>
+<div class="codehead"><span>scripts/player.gd</span></div><pre><code class="gd">func set_fuel(value: float) -&gt; void:
+    fuel = clampf(value, 0.0, 1.0)
+    lantern.texture_scale = lerpf(0.42, 1.0, fuel)
+    wall_light.texture_scale = lerpf(0.32, 0.6, fuel)</code></pre>
+<h4>How it works</h4><ul class="how"><li>Fuel drains by <code>delta / 50</code> each frame: full to empty in 50 seconds.</li><li><code>lerpf(0.42, 1.0, fuel)</code> maps fuel to light size: empty is 42% of full size, never fully dark.</li><li>Oil adds 0.5, and <code>clampf</code> keeps fuel between 0 and 1.</li></ul>
+<p class="key"><b>Answer key:</b> scripts/player.gd &rarr; set_fuel</p>
+</div></li>
+</ol></section>
+<section class="phase" id="phase-8">
+<header><span class="pn">Phase 8</span><h2>Three rings, one run</h2><span class="pc"></span></header>
+<ol class="steps">
+<li class="step" data-step="37">
+<label><input type="checkbox" id="s37"><span class="box"></span><span class="sn">37</span><span class="st">Generate the three rings</span></label>
+<div class="body">
+<p class="goal">Three real mazes that get bigger and harder, and can never trap you.</p>
+<h4>Do it</h4><ol class="do"><li>Copy <code>tools/make_mazes.py</code> from the answer key and run <code>python3 tools/make_mazes.py</code>. It overwrites your test maze and writes <code>inner_ring.gd</code> and <code>the_core.gd</code>.</li><li>Open the files and look. You can hand-edit any of them.</li></ol>
+<div class="tablewrap"><table><thead><tr><th></th><th>Outer Ring</th><th>Inner Ring</th><th>The Core</th></tr></thead><tbody><tr><th>Size</th><td>45&times;27</td><td>49&times;29</td><td>55&times;31</td></tr><tr><th>Hunters</th><td>1</td><td>3</td><td>6</td></tr><tr><th>Shift groups &times; cells</th><td>2 &times; 7</td><td>4 &times; 9</td><td>4 &times; 14</td></tr><tr><th>Extra safe rooms</th><td>2</td><td>2</td><td>1</td></tr><tr><th>Items</th><td>none</td><td>4 map pieces</td><td>5 oil</td></tr></tbody></table></div>
+<h4>How it works</h4><ul class="how"><li>It carves a perfect maze with a depth-first "recursive backtracker", then knocks out some walls to make loops (alternative routes).</li><li>It places a 5&times;5 safe room in the centre, extra 3&times;3 safe rooms far apart, and the exit at the edge tile farthest from the start.</li><li>For each candidate shifting wall it tests <b>every</b> on/off combination of all groups (up to 16) with a flood fill, and keeps the wall only if all floor still connects to the exit.</li></ul>
+<p class="key"><b>Answer key:</b> levels/*.gd, tools/make_mazes.py</p>
+</div></li>
+<li class="step" data-step="38">
+<label><input type="checkbox" id="s38"><span class="box"></span><span class="sn">38</span><span class="st">Ring to ring<span class="tag ms">Milestone</span></span></label>
+<div class="body">
+<p class="goal">Reach the exit, see "CLEARED", and continue straight into the next ring.</p>
+<h4>Do it</h4><ol class="do"><li>Type <code>_complete</code>, and uncomment the exit check in <code>_physics_process</code>.</li><li>Compare your <code>_ready</code> with the final version below and fill in anything missing (except <code>hud.setup</code>, which comes next).</li></ol>
+<div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _complete() -&gt; void:
+    finished = true
+    player.frozen = true
+    Phase.stop()
+    if _dark_tween:
+        _dark_tween.kill()
+    create_tween().tween_property(darkness, "color", Color.WHITE, 0.3)
+    player.set_dark(false)
+    Sfx.play("level_clear")
+    var last := Game.current_level == Game.LEVELS.size() - 1
+    Events.message.emit("YOU ESCAPED THE MAZE" if last else "%s CLEARED" % cfg.name.to_upper())
+    await get_tree().create_timer(1.8).timeout
+    Game.next_level()</code></pre>
+<div class="codehead"><span>scripts/level.gd (final _ready)</span></div><pre><code class="gd">func _ready() -&gt; void:
+    cfg = Game.level()
+    var tiles := MazeTiles.build()
+    walls.tile_set = tiles
+    floor_layer.tile_set = tiles
+
+    _parse(load(cfg.map).MAP)
+    _setup_astar()
+    for c in base:
+        _paint(c)
+    _spawn()
+
+    var cam: Camera2D = player.camera
+    cam.limit_left = 0
+    cam.limit_top = 0
+    cam.limit_right = map_size.x * T
+    cam.limit_bottom = map_size.y * T
+    cam.reset_smoothing.call_deferred()
+
+    Phase.changed.connect(_on_phase)
+    Events.player_caught.connect(_on_player_caught)
+    Events.item_picked.connect(_on_item_picked)
+
+    gate.position = cell_center(exit_cell)
+    gate.set_open(true, true)
+    darkness.color = Color.WHITE
+    player.set_fuel(1.0)
+
+    hud.setup(self)
+    Phase.start(cfg.light, cfg.dark, cfg.warning)
+    Events.message.emit("%s  -  %s" % [cfg.name.to_upper(), cfg.difficulty])</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>Phase.stop()</code> halts the cycle so the lights don't die during the celebration.</li><li><code>Game.next_level()</code> bumps <code>current_level</code> and reloads the <b>same</b> <code>level.tscn</code>. Its <code>_ready</code> reads the next entry of <code>LEVELS</code>.</li><li>Lives carry over because they live in the <code>Game</code> autoload, which isn't freed when scenes change.</li><li><code>finished = true</code> stops <code>_physics_process</code> and phase handling from doing anything during the 1.8 s wait.</li></ul>
+<p class="test"><b>Test:</b> Play the Outer Ring to the exit and land in the Inner Ring with the same number of lives.</p>
+<p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _complete, _ready</p>
+</div></li>
+</ol></section>
+<section class="phase" id="phase-9">
+<header><span class="pn">Phase 9</span><h2>UI and menus</h2><span class="pc"></span></header>
+<ol class="steps">
+<li class="step" data-step="39">
+<label><input type="checkbox" id="s39"><span class="box"></span><span class="sn">39</span><span class="st">HUD <em>(scenes/hud.tscn)</em></span></label>
+<div class="body">
+<p class="goal">Lives, ring name, the blackout bar, gate status, items, safe-room notice, minimap, banner and red flash.</p>
+<h4>Do it</h4><ol class="do"><li>New Scene, root <code>CanvasLayer</code> named <code>HUD</code>, Layer 10.</li><li>Build the tree below. For each node marked <b>%</b>, right-click it &rarr; <b>Access as Unique Name</b>.</li><li>Positioning: select a Control and use the <b>Anchor preset</b> button in the toolbar (top left, top right, bottom left, bottom right, full rect).</li><li>Labels: Font Size 9&ndash;10, Outline Size 3, Outline Color black (Theme Overrides in the Inspector). Banner: size 16, outline 5.</li><li>PhaseBar: Show Percentage off, minimum height 5, Theme Overrides &rarr; Styles: Background and Fill as <b>New StyleBoxFlat</b>.</li><li>Attach <code>scripts/hud.gd</code>, type it, save as <code>scenes/hud.tscn</code>. Instance it into <code>level.tscn</code> as <code>HUD</code>.</li><li>Uncomment <code>@onready var hud</code>, add <code>hud.setup(self)</code> to <code>_ready</code> (before <code>Phase.start</code>), and uncomment the <code>hud.</code> lines in <code>_on_player_caught</code> and <code>_on_item_picked</code>.</li></ol>
+<div class="codehead"><span>scripts/hud.gd</span></div><pre><code class="gd">extends CanvasLayer
+## On-screen info: lives, blackout timer, gate status, items, memory map,
+## messages and the pause menu. Runs while paused so the pause menu works.
+
+const HEART_FULL := preload("res://art/0x72/ui_heart_full.png")
+const HEART_EMPTY := preload("res://art/0x72/ui_heart_empty.png")
+
+@onready var hearts: HBoxContainer = %Hearts
+@onready var level_label: Label = %LevelLabel
+@onready var phase_label: Label = %PhaseLabel
+@onready var phase_bar: ProgressBar = %PhaseBar
+@onready var gate_label: Label = %GateLabel
+@onready var items_label: Label = %ItemsLabel
+@onready var safe_label: Label = %SafeLabel
+@onready var minimap: Control = %MiniMap
+@onready var banner: Label = %Banner
+@onready var flash_rect: ColorRect = %Flash
+@onready var pause_menu: Control = %PauseMenu
+
+var level: Node
+var _banner_tween: Tween
+var _bar_fill: StyleBoxFlat
+
+
+func _ready() -&gt; void:
+    process_mode = Node.PROCESS_MODE_ALWAYS
+    pause_menu.hide()
+    banner.modulate.a = 0.0
+    flash_rect.color.a = 0.0
+    _bar_fill = phase_bar.get_theme_stylebox("fill").duplicate()
+    phase_bar.add_theme_stylebox_override("fill", _bar_fill)
+    Events.message.connect(show_message)
+    %ResumeButton.pressed.connect(_toggle_pause)
+    %QuitButton.pressed.connect(_quit_to_title)
+
+
+func setup(lvl: Node) -&gt; void:
+    level = lvl
+    level_label.text = "%s  %s" % [level.cfg.name, level.cfg.difficulty]
+    minimap.setup(level)
+    refresh()
+
+
+func refresh() -&gt; void:
+    for i in hearts.get_child_count():
+        hearts.get_child(i).texture = HEART_FULL if i &lt; Game.lives else HEART_EMPTY
+    if level == null:
+        return
+    if level.cfg.map_mode == "pieces":
+        items_label.text = "Map pieces: %d" % Game.map_pieces
+    elif level.cfg.lantern_fuel:
+        items_label.text = "Lantern"
+    else:
+        items_label.text = ""
+
+
+func _process(_delta: float) -&gt; void:
+    if level == null:
+        return
+    match Phase.phase:
+        Phase.P.LIGHT:
+            phase_label.text = "LIGHT"
+            _bar_fill.bg_color = Color(1, 0.8, 0.4)
+        Phase.P.WARNING:
+            phase_label.text = "LIGHTS FAILING"
+            _bar_fill.bg_color = Color(1, 0.45, 0.3)
+        Phase.P.DARK:
+            phase_label.text = "BLACKOUT"
+            _bar_fill.bg_color = Color(0.55, 0.45, 0.9)
+    phase_bar.value = Phase.fraction_left() * 100.0
+
+    var n: int = level.blackouts_until_gate_change()
+    var plural := "blackout" if n == 1 else "blackouts"
+    if level.gate_open:
+        gate_label.text = "Gate open - shuts in %d %s" % [n, plural]
+        gate_label.modulate = Color(0.6, 1, 0.7)
+    else:
+        gate_label.text = "Gate SHUT - opens in %d %s" % [n, plural]
+        gate_label.modulate = Color(1, 0.5, 0.45)
+
+    if level.cfg.lantern_fuel:
+        items_label.text = "Lantern oil: %d%%" % roundi(level.player.fuel * 100.0)
+    safe_label.visible = level.player.is_safe
+    items_label.visible = items_label.text != ""
+
+
+func show_message(text: String) -&gt; void:
+    banner.text = text
+    if _banner_tween:
+        _banner_tween.kill()
+    _banner_tween = create_tween()
+    _banner_tween.tween_property(banner, "modulate:a", 1.0, 0.15)
+    _banner_tween.tween_interval(1.6)
+    _banner_tween.tween_property(banner, "modulate:a", 0.0, 0.5)
+
+
+func flash(color: Color) -&gt; void:
+    flash_rect.color = color
+    create_tween().tween_property(flash_rect, "color:a", 0.0, 0.6)
+
+
+func _unhandled_input(event: InputEvent) -&gt; void:
+    if event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
+        _toggle_pause()
+        get_viewport().set_input_as_handled()
+
+
+func _toggle_pause() -&gt; void:
+    var paused := not get_tree().paused
+    get_tree().paused = paused
+    pause_menu.visible = paused
+    if paused:
+        %ResumeButton.grab_focus()
+
+
+func _quit_to_title() -&gt; void:
+    get_tree().paused = false
+    Game.to_title()</code></pre>
+<pre class="tree"><code>HUD (CanvasLayer)  layer 10, script hud.gd
+├── TopLeft (VBoxContainer)             anchor top-left, at (8, 6)
+│   ├── %Hearts (HBoxContainer)        5 × TextureRect, ui_heart_full
+│   └── %LevelLabel (Label)
+├── TopRight (VBoxContainer)            anchor top-right, 142 px wide
+│   ├── %PhaseLabel (Label)            align right
+│   └── %PhaseBar (ProgressBar)
+├── BottomLeft (VBoxContainer)          anchor bottom-left
+│   ├── %SafeLabel (Label)             teal text
+│   ├── %ItemsLabel (Label)
+│   └── %GateLabel (Label)
+├── %MiniMap (Control)                  anchor bottom-right, script minimap.gd, mouse ignore
+├── %Banner (Label)                     anchor top-wide at 28% height, centred
+├── %Flash (ColorRect)                  full rect, transparent red, mouse ignore
+└── %PauseMenu (Control)                full rect, hidden  → step 40</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>%Name</code> finds a node marked Unique Name anywhere in the scene, so you can move nodes around without breaking paths.</li><li>The fill StyleBox is duplicated in <code>_ready</code> so changing its colour per phase doesn't change the shared resource on disk.</li><li><code>Events.message</code> feeds the banner from anywhere: the level, safe rooms, the gate.</li><li>The banner tween fades in, waits 1.6 s with <code>tween_interval</code>, and fades out. A new message kills the old tween first.</li></ul>
+<p class="test"><b>Test:</b> F5 from the level: hearts, the bar draining toward the next blackout, and the gate countdown all update.</p>
+<p class="key"><b>Answer key:</b> scenes/hud.tscn, scripts/hud.gd</p>
+</div></li>
+<li class="step" data-step="40">
+<label><input type="checkbox" id="s40"><span class="box"></span><span class="sn">40</span><span class="st">Pause menu</span></label>
+<div class="body">
+<p class="goal">P or Esc pauses everything except the menu itself.</p>
+<h4>Do it</h4><ol class="do"><li>Under <code>%PauseMenu</code> (full rect, Visible off): a <code>ColorRect</code> dim (black, 60% alpha, full rect), then <code>CenterContainer</code> &rarr; <code>PanelContainer</code> &rarr; <code>VBoxContainer</code> with a "PAUSED" Label, <code>%ResumeButton</code>, <code>%QuitButton</code> and a small help Label.</li><li>The pause functions are already in hud.gd from the previous step.</li></ol>
+<div class="codehead"><span>scripts/hud.gd</span></div><pre><code class="gd">func _unhandled_input(event: InputEvent) -&gt; void:
+    if event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
+        _toggle_pause()
+        get_viewport().set_input_as_handled()
+
+
+func _toggle_pause() -&gt; void:
+    var paused := not get_tree().paused
+    get_tree().paused = paused
+    pause_menu.visible = paused
+    if paused:
+        %ResumeButton.grab_focus()
+
+
+func _quit_to_title() -&gt; void:
+    get_tree().paused = false
+    Game.to_title()</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>get_tree().paused = true</code> stops every node whose process mode is <b>Inherit</b> (the default): the level, hunters, player, and the Phase timer.</li><li>The HUD sets <code>process_mode = PROCESS_MODE_ALWAYS</code> in <code>_ready</code>, so it keeps receiving input and can unpause.</li><li><code>_unhandled_input</code> only gets keys that no button or other UI already used, and <code>set_input_as_handled()</code> stops them going further.</li></ul>
+<h4>Watch out</h4><ul class="warn"><li>Unpause before changing scenes (<code>_quit_to_title</code> does), or the next scene starts frozen.</li></ul>
+<p class="test"><b>Test:</b> Press P in the dark: hunters, timer and footsteps all stop. P again resumes.</p>
+<p class="key"><b>Answer key:</b> scripts/hud.gd &rarr; _toggle_pause</p>
+</div></li>
+<li class="step" data-step="41">
+<label><input type="checkbox" id="s41"><span class="box"></span><span class="sn">41</span><span class="st">Title screen <em>(scenes/title.tscn)</em></span></label>
+<div class="body">
+<p class="goal">A first screen with the knight, the demon, the rules and a Start button.</p>
+<h4>Do it</h4><ol class="do"><li>New Scene, root <code>Control</code> named <code>Title</code>, full-rect anchors. Build the tree below.</li><li>Knight and Demon: <code>AnimatedSprite2D</code>s at (250, 130) and (390, 118), Scale (3, 3), Demon flipped horizontally, both Unique Name.</li><li>Attach <code>scripts/title.gd</code>, type it, save.</li><li><b>Project Settings &rarr; Application &rarr; Run &rarr; Main Scene</b>: <code>res://scenes/title.tscn</code>.</li></ol>
+<div class="codehead"><span>scripts/title.gd</span></div><pre><code class="gd">extends Control
+## Title screen.
+
+@onready var start_button: Button = %StartButton
+@onready var demon: AnimatedSprite2D = %Demon
+@onready var knight: AnimatedSprite2D = %Knight
+
+
+func _ready() -&gt; void:
+    get_tree().paused = false
+    knight.sprite_frames = Art.sprite_frames("knight_m")
+    knight.play("idle")
+    demon.sprite_frames = Art.sprite_frames("big_demon")
+    demon.play("idle")
+    start_button.pressed.connect(Game.new_run)
+    start_button.grab_focus()
+    %Quit.pressed.connect(get_tree().quit)
+
+
+func _process(_delta: float) -&gt; void:
+    # the demon only "moves" when the title's lights flicker off
+    var dark := fmod(Time.get_ticks_msec() / 1000.0, 4.0) &gt; 3.3
+    %Shade.color.a = 0.85 if dark else 0.0
+    demon.speed_scale = 1.0 if dark else 0.0</code></pre>
+<pre class="tree"><code>Title (Control)  full rect, script title.gd
+├── Background (ColorRect)      full rect, very dark purple
+├── %Knight (AnimatedSprite2D)
+├── %Demon (AnimatedSprite2D)
+├── %Shade (ColorRect)          full rect, transparent, mouse ignore
+└── VBox (VBoxContainer)        anchor bottom-wide
+    ├── Name (Label)            "BLACKOUT MAZE", size 32
+    ├── Tagline (Label)         two lines of rules
+    ├── Rings (Label)
+    ├── Buttons (HBoxContainer)
+    │   ├── %StartButton (Button)  "Enter the maze"
+    │   └── %Quit (Button)
+    └── Controls (Label)</code></pre>
+<h4>How it works</h4><ul class="how"><li><code>start_button.pressed.connect(Game.new_run)</code> connects a signal straight to an autoload function. No extra function needed.</li><li>The title teaches the core rule without words: every 4 s the screen goes dark for a moment, and only then does the demon move.</li></ul>
+<p class="key"><b>Answer key:</b> scenes/title.tscn, scripts/title.gd</p>
+</div></li>
+<li class="step" data-step="42">
+<label><input type="checkbox" id="s42"><span class="box"></span><span class="sn">42</span><span class="st">End screen <em>(scenes/end_screen.tscn)</em></span></label>
+<div class="body">
+<p class="goal">"YOU ESCAPED" or "CAUGHT IN THE DARK", your time, and buttons to go again.</p>
+<h4>Do it</h4><ol class="do"><li>New Scene, root <code>Control</code> named <code>EndScreen</code>, full rect: a dark <code>ColorRect</code> background, then <code>CenterContainer</code> &rarr; <code>VBoxContainer</code> with <code>%Headline</code>, <code>%Stats</code> and an HBox holding <code>%AgainButton</code> and <code>%TitleButton</code>.</li><li>Attach <code>scripts/end_screen.gd</code>, type it, save as <code>scenes/end_screen.tscn</code>.</li></ol>
+<div class="codehead"><span>scripts/end_screen.gd</span></div><pre><code class="gd">extends Control
+## Shown when the run ends, either escaped or caught.
+
+
+func _ready() -&gt; void:
+    get_tree().paused = false
+    var escaped := Game.result == "escaped"
+    %Headline.text = "YOU ESCAPED" if escaped else "CAUGHT IN THE DARK"
+    %Headline.modulate = Color(0.6, 1, 0.7) if escaped else Color(1, 0.45, 0.4)
+    var ring: String = Game.LEVELS[mini(Game.current_level, Game.LEVELS.size() - 1)].name
+    var t := int(Game.run_time)
+    var lines := []
+    if escaped:
+        lines.append("All three rings cleared.")
+    else:
+        lines.append("Taken in %s." % ring)
+    lines.append("Time  %d:%02d" % [t / 60, t % 60])
+    lines.append("Times caught  %d" % Game.times_caught)
+    %Stats.text = "\n".join(lines)
+    %AgainButton.pressed.connect(Game.new_run)
+    %TitleButton.pressed.connect(Game.to_title)
+    %AgainButton.grab_focus()</code></pre>
+<h4>How it works</h4><ul class="how"><li>It reads everything from <code>Game</code>: <code>result</code>, <code>run_time</code>, <code>times_caught</code>.</li><li><code>"%d:%02d" % [t / 60, t % 60]</code> formats seconds as minutes:seconds with a leading zero.</li></ul>
+<p class="test"><b>Test:</b> Lose all 5 lives: the end screen says CAUGHT, and Run again starts a fresh run from the Outer Ring.</p>
+<p class="key"><b>Answer key:</b> scenes/end_screen.tscn, scripts/end_screen.gd</p>
+</div></li>
+</ol></section>
+<section class="phase" id="phase-10">
+<header><span class="pn">Phase 10</span><h2>Test, tune, ship</h2><span class="pc"></span></header>
+<ol class="steps">
+<li class="step" data-step="43">
+<label><input type="checkbox" id="s43"><span class="box"></span><span class="sn">43</span><span class="st">A headless smoke test</span></label>
+<div class="body">
+<p class="goal">A script that plays the whole game by itself in seconds and reports problems.</p>
+<h4>Do it</h4><ol class="do"><li>Create <code>tests/smoke_test.gd</code> and type it.</li><li>Run it from a terminal in the project folder (adjust the Godot path):</li></ol>
+<div class="codehead"><span>terminal</span></div><pre><code>/Users/bt/Downloads/Godot.app/Contents/MacOS/Godot --headless --path . --script res://tests/smoke_test.gd
+/Users/bt/Downloads/Godot.app/Contents/MacOS/Godot --headless --path . --script res://tests/smoke_test.gd -- die</code></pre>
+<div class="codehead"><span>tests/smoke_test.gd</span></div><pre><code class="gd">extends SceneTree
+## Headless smoke test: plays through all three rings with a sped-up blackout
+## cycle, walks the player around, lets hunters catch them, and checks the
+## run reaches the end screen.
+##   Godot --headless --path . --script res://tests/smoke_test.gd
+
+var frames := 0
+var log_lines := []
+var phase_counts := {}
+var shifts := 0
+var caught := 0
+var levels_seen := {}
+var problems := []
+
+
+var started := false
+var want_catch := false
+var die_mode := false
+
+
+func _start() -&gt; void:
+    started = true
+    die_mode = "die" in OS.get_cmdline_user_args()
+    root.get_node("Game").new_run()
+    root.get_node("Events").walls_shifted.connect(func(cells): shifts += 1)
+    root.get_node("Events").player_caught.connect(func(): caught += 1)
+    root.get_node("Phase").changed.connect(func(p): phase_counts[p] = phase_counts.get(p, 0) + 1)
+
+
+func _process(_delta: float) -&gt; bool:
+    if not started:
+        _start()
+        return false
+    frames += 1
+    var phase = root.get_node("Phase")
+    var game = root.get_node("Game")
+    var scene = current_scene
+    if scene and scene.name == "Level":
+        levels_seen[game.current_level] = true
+        # speed up the cycle
+        if phase.timer.time_left &gt; 0.4:
+            phase.timer.start(0.4)
+        var player = scene.player
+        # wander: alternate directions
+        var dirs = ["move_right", "move_down", "move_left", "move_up"]
+        for a in dirs:
+            Input.action_release(a)
+        Input.action_press(dirs[(frames / 40) % 4])
+        if (frames / 90) % 2 == 0:
+            Input.action_press("run")
+        else:
+            Input.action_release("run")
+        # every so often: check invariants
+        if frames % 30 == 0:
+            var pc = scene.world_to_cell(player.global_position)
+            if scene.is_wall(pc):
+                problems.append("player inside wall at %s (level %d)" % [pc, game.current_level])
+            for h in scene.hunters.get_children():
+                var hc = h.cell()
+                if scene.is_wall(hc):
+                    problems.append("hunter inside wall at %s" % hc)
+        # after a while, let a hunter reach the player once per level
+        if frames % 300 == 150 or (die_mode and frames % 60 == 0):
+            want_catch = true
+        if die_mode and want_catch and phase.is_dark() and player.is_safe and scene.hunters.get_child_count() &gt; 0:
+            player.global_position = scene.hunters.get_child(0).global_position
+        if want_catch and phase.is_dark() and scene.hunters.get_child_count() &gt; 0 \
+                and not player.is_safe and player.invulnerable &lt;= 0.0 and not player.frozen:
+            var h = scene.hunters.get_child(0)
+            h.global_position = player.global_position + Vector2(4, 0)
+            want_catch = false
+        # then teleport to the exit when the gate is open
+        if frames % 1500 == 1400 and not die_mode:
+            if scene.gate_open:
+                player.global_position = scene.cell_center(scene.exit_cell)
+            else:
+                player.global_position = scene.cell_center(scene.start_cell)
+    if scene and scene.name == "EndScreen":
+        print("END: result=", game.result, " lives=", game.lives, " caught=", game.times_caught)
+        _report()
+        return true
+    if frames &gt; 60 * 200:
+        print("TIMEOUT in scene ", scene.name if scene else "none", " level ", game.current_level)
+        _report()
+        return true
+    return false
+
+
+func _report() -&gt; void:
+    print("frames=", frames, " levels_seen=", levels_seen.keys(), " phases=", phase_counts,
+        " wall_shifts=", shifts, " caught_signals=", caught)
+    print("problems: ", problems if problems else "none")</code></pre>
+<h4>How it works</h4><ul class="how"><li>A script that <code>extends SceneTree</code> replaces Godot's main loop. <code>_process</code> returning true quits.</li><li>It speeds up the blackout timer to 0.4 s, walks in a square, runs half the time, puts a hunter next to the player now and then, and teleports to the exit when the gate is open.</li><li>Every 30 frames it checks that neither the player nor any hunter is inside a wall.</li><li>With <code>-- die</code> it keeps getting caught to test the game-over path.</li></ul>
+<h4>Watch out</h4><ul class="warn"><li>Autoloads aren't in the tree yet during <code>_initialize()</code>, so the run starts on the first <code>_process</code> frame. The first version of this test crashed for exactly that reason.</li></ul>
+<p class="test"><b>Test:</b> Expected: <code>END: result=escaped</code> with <code>problems: none</code>; with <code>-- die</code>, <code>result=caught lives=0</code>.</p>
+<p class="key"><b>Answer key:</b> tests/smoke_test.gd</p>
+</div></li>
+<li class="step" data-step="44">
+<label><input type="checkbox" id="s44"><span class="box"></span><span class="sn">44</span><span class="st">Look at it</span></label>
+<div class="body">
+<p class="goal">Screenshots of every ring in light and dark, saved automatically.</p>
+<h4>Do it</h4><ol class="do"><li>Copy or type <code>tests/capture.gd</code>, then run it <b>without</b> <code>--headless</code> (it needs a window to render):</li></ol>
+<div class="codehead"><span>terminal</span></div><pre><code>/Users/bt/Downloads/Godot.app/Contents/MacOS/Godot --path . --script res://tests/capture.gd -- ~/Desktop/shots</code></pre>
+<div class="codehead"><span>tests/capture.gd</span></div><pre><code class="gd">extends SceneTree
+## Saves screenshots of the title and each ring in light and dark, for a quick
+## visual check. Needs a window (not --headless):
+##   Godot --path . --script res://tests/capture.gd -- &lt;output_dir&gt;
+
+var out_dir := "user://captures"
+var steps := []
+var wait := 0
+
+
+func _initialize() -&gt; void:
+    var args := OS.get_cmdline_user_args()
+    if args.size() &gt; 0:
+        out_dir = args[0]
+    steps = [
+        [5, func(): change_scene_to_file("res://scenes/title.tscn")],
+        [40, func(): pass],
+        [1, func(): _shot("title")],
+        [1, func(): root.get_node("Game").new_run()],
+    ]
+    for ring in 3:
+        steps += [
+            [30, func(): Input.action_press("move_right")],
+            [25, func(): Input.action_release("move_right")],
+            [10, func(): _shot("ring%d_light" % ring)],
+            [3, func(): root.get_node("Phase").timer.start(0.01)],   # -&gt; warning
+            [3, func(): root.get_node("Phase").timer.start(0.01)],   # -&gt; dark
+            [45, func(): pass],
+            [1, func(): _shot("ring%d_dark" % ring)],
+            [1, func(): root.get_node("Game").next_level()],
+        ]
+
+
+func _process(_delta: float) -&gt; bool:
+    if wait &gt; 0:
+        wait -= 1
+        return false
+    if steps.is_empty():
+        return true
+    var s = steps.pop_front()
+    s[1].call()
+    wait = s[0]
+    return false
+
+
+func _shot(shot_name: String) -&gt; void:
+    var img := root.get_viewport().get_texture().get_image()
+    DirAccess.make_dir_recursive_absolute(out_dir)
+    img.save_png(out_dir.path_join(shot_name + ".png"))
+    print("saved ", shot_name)</code></pre>
+<h4>How it works</h4><ul class="how"><li>It's a list of [frames to wait, action] pairs, run one after another.</li><li><code>root.get_viewport().get_texture().get_image().save_png(...)</code> saves exactly what's on screen.</li><li>This is how the blackout got made darker: the first screenshots showed the maze faintly through it.</li></ul>
+<p class="key"><b>Answer key:</b> tests/capture.gd</p>
+</div></li>
+<li class="step" data-step="45">
+<label><input type="checkbox" id="s45"><span class="box"></span><span class="sn">45</span><span class="st">Play it and tune it</span></label>
+<div class="body">
+<p class="goal">Make it feel right. This is the step that makes it your game.</p>
+<h4>Do it</h4><ol class="do"><li>Play each ring at least twice. Write down one thing that felt too easy and one that felt unfair.</li><li>Change only numbers in <code>LEVELS</code> first: phase times, hunter speed, hearing, when the gate shuts.</li><li>Then add a twist of your own: a new hunter type, a lever that freezes walls, a sprint stamina bar, a different end-screen message.</li></ol>
+<h4>How it works</h4><ul class="how"><li>Small changes matter: hunter speed 52 vs 58 is the difference between "I can outwalk the ogre" and "I must run", and running makes noise.</li><li>Rerun the smoke test after every change to catch anything you broke.</li></ul>
+</div></li>
+<li class="step" data-step="46">
+<label><input type="checkbox" id="s46"><span class="box"></span><span class="sn">46</span><span class="st">Export</span></label>
+<div class="body">
+<p class="goal">A real app you can send to a friend.</p>
+<h4>Do it</h4><ol class="do"><li><b>Project &rarr; Export &rarr; Add&hellip; &rarr; macOS</b> (or Web).</li><li>If Godot asks for export templates, click <b>Manage Export Templates &rarr; Download and Install</b>.</li><li>Click <b>Export Project</b>, choose a location, done.</li></ol>
+<h4>How it works</h4><ul class="how"><li>The maps are <code>.gd</code> files and the art and sounds are imported resources, so everything is included automatically.</li><li>Rename the project (Project Settings &rarr; Application &rarr; Config &rarr; Name) before sharing publicly; "Maze Runner" is someone else's name.</li></ul>
+</div></li>
+</ol></section>
+    </main>
+  </div>
+
+  <footer class="help">
+    <div>
+      <h3>When you get stuck</h3>
+      <ul>
+        <li>Compare with the answer-key file named under the step.</li>
+        <li>Read the red error in the Debugger panel: it names the file and line.</li>
+        <li>Turn on Debug &rarr; Visible Collision Shapes to see what the engine sees.</li>
+        <li>Paste your script and the error to Claude and ask for an explanation, not a fix.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>References</h3>
+      <ul>
+        <li><a href="https://docs.godotengine.org/en/stable/">Godot docs</a>, or press F1 on any node in the editor.</li>
+        <li><a href="https://0x72.itch.io/dungeontileset-ii">16x16 DungeonTileset II</a> by 0x72 (CC0).</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Before you publish</h3>
+      <p style="margin:0">The game's text avoids the Maze Runner names. Rename the project from "Maze Runner: Platform Edition" before sharing it publicly.</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const KEY = 'blackoutMazeChecklist.v3';
+  const MILESTONES = [18, 21, 24, 30, 38];
+  const steps = [...document.querySelectorAll('.step')];
+  const TOTAL = steps.length;
+  document.getElementById('stepTotal').textContent = TOTAL;
+  let state = null;
+  try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
+  if (!state || typeof state !== 'object' || !state.done) state = { done: {}, hideDone: false };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+
+  // GDScript highlighting
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const RE = /(#[^\n]*)|("(?:[^"\\\n]|\\.)*")|(@\w+)|\b(extends|class_name|static|func|var|const|if|else|elif|match|return|signal|enum|not|and|or|for|in|while|await|true|false|null|void|continue|break|pass)\b|\b(\d+(?:\.\d+)?)\b|\b([A-Z][A-Za-z0-9_]*)\b/g;
+  for (const el of document.querySelectorAll('pre > code.gd')) {
+    const src = el.textContent;
+    let out = '', last = 0, m;
+    RE.lastIndex = 0;
+    while ((m = RE.exec(src))) {
+      out += esc(src.slice(last, m.index));
+      const cls = m[1] ? 'cm' : m[2] ? 's' : m[3] ? 'an' : m[4] ? 'k' : m[5] ? 'n' : 'ty';
+      out += `<span class="${cls}">${esc(m[0])}</span>`;
+      last = RE.lastIndex;
+    }
+    el.innerHTML = out + esc(src.slice(last));
+  }
+
+  const phases = [...document.querySelectorAll('.phase')];
+  const rail = document.getElementById('rail');
+  for (const ph of phases) {
+    const a = document.createElement('a');
+    a.href = '#' + ph.id;
+    a.innerHTML = `<span>${ph.querySelector('h2').textContent}</span><span class="c"></span>`;
+    rail.appendChild(a);
+    ph._link = a;
+  }
+
+  const ticks = document.getElementById('ticks');
+  for (const n of MILESTONES) {
+    const s = document.createElement('span');
+    s.style.left = (n / TOTAL * 100) + '%';
+    s.textContent = n;
+    s.dataset.n = n;
+    ticks.appendChild(s);
+  }
+
+  const boxes = [...document.querySelectorAll('.step input[type=checkbox]')];
+  const nextStep = () => steps.find(s => !state.done[s.dataset.step]);
+  function render() {
+    let done = 0;
+    for (const b of boxes) {
+      const li = b.closest('.step');
+      b.checked = !!state.done[li.dataset.step];
+      li.classList.toggle('done', b.checked);
+      if (b.checked) done++;
+    }
+    document.getElementById('count').innerHTML = `${done} / ${TOTAL}<small>steps done</small>`;
+    document.getElementById('fill').style.width = (done / TOTAL * 100) + '%';
+    for (const s of ticks.children) s.classList.toggle('hit', !!state.done[s.dataset.n]);
+    const next = nextStep();
+    for (const ph of phases) {
+      const bs = [...ph.querySelectorAll('input[type=checkbox]')];
+      const d = bs.filter(b => b.checked).length;
+      ph.querySelector('.pc').textContent = `${d} / ${bs.length}`;
+      ph._link.querySelector('.c').textContent = `${d}/${bs.length}`;
+      const full = d === bs.length;
+      ph.classList.toggle('complete', full);
+      ph._link.classList.toggle('full', full);
+      ph._link.classList.toggle('current', !!next && ph.contains(next));
+    }
+    document.body.classList.toggle('hide-done', !!state.hideDone);
+    const hb = document.getElementById('btnHide');
+    hb.setAttribute('aria-pressed', String(!!state.hideDone));
+    hb.textContent = state.hideDone ? 'Show finished' : 'Hide finished';
+    const nb = document.getElementById('btnNext');
+    nb.textContent = next ? `Go to step ${next.dataset.step}` : `All ${TOTAL} done`;
+    nb.disabled = !next;
+  }
+
+  for (const b of boxes) {
+    b.addEventListener('change', () => {
+      const n = b.closest('.step').dataset.step;
+      if (b.checked) state.done[n] = true; else delete state.done[n];
+      save(); render();
+    });
+  }
+  document.getElementById('btnNext').addEventListener('click', () => {
+    const s = nextStep();
+    if (s) { s.scrollIntoView({ block: 'start' }); s.querySelector('input').focus({ preventScroll: true }); }
+  });
+  document.getElementById('btnHide').addEventListener('click', () => { state.hideDone = !state.hideDone; save(); render(); });
+  const rb = document.getElementById('btnReset');
+  let armed = null;
+  rb.addEventListener('click', () => {
+    if (!armed) {
+      rb.textContent = 'Click again to clear all ticks';
+      rb.classList.add('danger');
+      armed = setTimeout(() => { armed = null; rb.textContent = 'Reset progress'; rb.classList.remove('danger'); }, 3000);
+      return;
+    }
+    clearTimeout(armed); armed = null;
+    rb.textContent = 'Reset progress'; rb.classList.remove('danger');
+    state = { done: {}, hideDone: false }; save(); render();
+  });
+
+  render();
+})();
+</script>

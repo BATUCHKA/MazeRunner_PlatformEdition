@@ -1,0 +1,227 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://scripts/minimap.gd" id="2_minimap"]
+[ext_resource type="Texture2D" path="res://art/0x72/ui_heart_full.png" id="3_heart"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_bg"]
+bg_color = Color(0, 0, 0, 0.55)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_fill"]
+bg_color = Color(1, 0.8, 0.4, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.07, 0.06, 0.09, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.45, 0.36, 0.3, 1)
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
+
+[node name="HUD" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_hud")
+
+[node name="TopLeft" type="VBoxContainer" parent="."]
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 200.0
+offset_bottom = 40.0
+theme_override_constants/separation = 2
+
+[node name="Hearts" type="HBoxContainer" parent="TopLeft"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Heart1" type="TextureRect" parent="TopLeft/Hearts"]
+layout_mode = 2
+texture = ExtResource("3_heart")
+stretch_mode = 2
+
+[node name="Heart2" type="TextureRect" parent="TopLeft/Hearts"]
+layout_mode = 2
+texture = ExtResource("3_heart")
+stretch_mode = 2
+
+[node name="Heart3" type="TextureRect" parent="TopLeft/Hearts"]
+layout_mode = 2
+texture = ExtResource("3_heart")
+stretch_mode = 2
+
+[node name="Heart4" type="TextureRect" parent="TopLeft/Hearts"]
+layout_mode = 2
+texture = ExtResource("3_heart")
+stretch_mode = 2
+
+[node name="Heart5" type="TextureRect" parent="TopLeft/Hearts"]
+layout_mode = 2
+texture = ExtResource("3_heart")
+stretch_mode = 2
+
+[node name="LevelLabel" type="Label" parent="TopLeft"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 9
+text = "Outer Ring  EASY"
+
+[node name="TopRight" type="VBoxContainer" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -150.0
+offset_top = 6.0
+offset_right = -8.0
+offset_bottom = 30.0
+grow_horizontal = 0
+theme_override_constants/separation = 2
+
+[node name="PhaseLabel" type="Label" parent="TopRight"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 10
+text = "LIGHT"
+horizontal_alignment = 2
+
+[node name="PhaseBar" type="ProgressBar" parent="TopRight"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
+value = 100.0
+show_percentage = false
+
+[node name="BottomLeft" type="VBoxContainer" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -48.0
+offset_right = 260.0
+offset_bottom = -6.0
+grow_vertical = 0
+theme_override_constants/separation = 0
+alignment = 2
+
+[node name="SafeLabel" type="Label" parent="BottomLeft"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.95, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 9
+text = "SAFE ROOM - hunters can't get in"
+
+[node name="ItemsLabel" type="Label" parent="BottomLeft"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 9
+
+[node name="GateLabel" type="Label" parent="BottomLeft"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 9
+text = "Gate open"
+
+[node name="MiniMap" type="Control" parent="."]
+unique_name_in_owner = true
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -98.0
+offset_top = -62.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("2_minimap")
+
+[node name="Banner" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 10
+anchor_top = 0.28
+anchor_right = 1.0
+anchor_bottom = 0.28
+offset_bottom = 24.0
+theme_override_colors/font_color = Color(1, 0.88, 0.62, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 16
+text = "OUTER RING"
+horizontal_alignment = 1
+
+[node name="Flash" type="ColorRect" parent="."]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(1, 0, 0, 0)
+
+[node name="PauseMenu" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Dim" type="ColorRect" parent="PauseMenu"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.6)
+
+[node name="Center" type="CenterContainer" parent="PauseMenu"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="PanelContainer" parent="PauseMenu/Center"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="PauseMenu/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="PauseMenu/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="PauseMenu/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "Resume (P)"
+
+[node name="QuitButton" type="Button" parent="PauseMenu/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "Quit to title"
+
+[node name="Help" type="Label" parent="PauseMenu/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.66, 0.62, 1)
+theme_override_font_sizes/font_size = 8
+text = "Move: WASD / arrows    Run: Shift (hunters hear it)
+Purple walls move in the dark. Teal rooms are safe."
+horizontal_alignment = 1

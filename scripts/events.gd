@@ -4,7 +4,7 @@ extends Node
 
 ## The player made a sound at `pos` (running footsteps).
 signal noise_made(pos: Vector2)
-## A hunter reached the player.
+## A monster reached the player.
 signal player_caught
 ## Shifting walls changed. `cells` are the tile coordinates that changed.
 signal walls_shifted(cells: Array)

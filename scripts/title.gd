@@ -1,7 +1,7 @@
 extends Control
 ## Title screen.
 
-@onready var start_button: Button = %StartButton
+@onready var buttons: HBoxContainer = %Buttons
 @onready var demon: AnimatedSprite2D = %Demon
 @onready var knight: AnimatedSprite2D = %Knight
 
@@ -12,9 +12,24 @@ func _ready() -> void:
 	knight.play("idle")
 	demon.sprite_frames = Art.sprite_frames("big_demon")
 	demon.play("idle")
-	start_button.pressed.connect(Game.new_run)
-	start_button.grab_focus()
+	_add_ring_buttons()
 	%Quit.pressed.connect(get_tree().quit)
+
+
+## One button per ring in Game.LEVELS, placed before Quit. Focus starts on the
+## ring picked last time, so "Enter" replays it.
+func _add_ring_buttons() -> void:
+	for i in Game.LEVELS.size():
+		var cfg: Dictionary = Game.LEVELS[i]
+		var b := Button.new()
+		b.text = "%s\n%s" % [cfg.name, cfg.difficulty]
+		b.custom_minimum_size = Vector2(96, 0)
+		b.add_theme_font_size_override("font_size", 11)
+		b.pressed.connect(Game.new_run.bind(i))
+		buttons.add_child(b)
+		buttons.move_child(b, i)
+		if i == Game.start_level:
+			b.grab_focus.call_deferred()
 
 
 func _process(_delta: float) -> void:

@@ -42,7 +42,7 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -190.0
+offset_top = -200.0
 offset_bottom = -14.0
 grow_vertical = 0
 theme_override_constants/separation = 6
@@ -61,7 +61,7 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.74, 0.7, 1)
 theme_override_font_sizes/font_size = 10
-text = "Every few seconds the lights die. In the dark the walls move and the hunters wake.
+text = "Every few seconds the lights die. In the dark the walls move and the monsters wake.
 Memorise the maze while you can see it. Running is fast, but they hear it."
 horizontal_alignment = 1
 
@@ -69,20 +69,14 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.56, 0.66, 1)
 theme_override_font_sizes/font_size = 9
-text = "Outer Ring (easy)  >  Inner Ring (medium)  >  The Core (hard)  -  one run, 5 lives"
+text = "Pick a ring to enter. Each ring you escape leads to the next  -  one run, 3 lives"
 horizontal_alignment = 1
 
 [node name="Buttons" type="HBoxContainer" parent="VBox"]
-layout_mode = 2
-theme_override_constants/separation = 10
-alignment = 1
-
-[node name="StartButton" type="Button" parent="VBox/Buttons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(110, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Enter the maze"
+theme_override_constants/separation = 8
+alignment = 1
 
 [node name="Quit" type="Button" parent="VBox/Buttons"]
 unique_name_in_owner = true

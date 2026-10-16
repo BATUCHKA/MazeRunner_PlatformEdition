@@ -119,7 +119,7 @@ theme_override_colors/font_color = Color(0.55, 0.95, 0.9, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 9
-text = "SAFE ROOM - hunters can't get in"
+text = "SAFE ROOM - monsters can't get in"
 
 [node name="ItemsLabel" type="Label" parent="BottomLeft"]
 unique_name_in_owner = true
@@ -222,6 +222,6 @@ text = "Quit to title"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.66, 0.62, 1)
 theme_override_font_sizes/font_size = 8
-text = "Move: WASD / arrows    Run: Shift (hunters hear it)
+text = "Move: WASD / arrows    Run: Shift (monsters hear it)
 Purple walls move in the dark. Teal rooms are safe."
 horizontal_alignment = 1

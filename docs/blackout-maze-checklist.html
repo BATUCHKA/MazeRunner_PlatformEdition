@@ -185,7 +185,7 @@
   .body h4 { margin: 6px 0 -2px; font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
   ol.do, ul.how, ul.warn { margin: 0; padding-left: 22px; display: grid; gap: 5px; }
   ol.do li::marker { color: var(--lantern); font-family: var(--mono); font-size: 12px; }
-  ul.warn li::marker { color: var(--hunter); }
+  ul.warn li::marker { color: var(--monster); }
   ul.warn li { color: var(--text); }
   pre.tree { color: var(--dim); }
   pre.tree code { color: var(--text); }
@@ -202,7 +202,7 @@
   <section class="hero" aria-labelledby="title">
     <p class="eyebrow">Godot 4.7 &middot; top-down &middot; <span id="stepTotal">46</span> steps</p>
     <h1 id="title">Blackout <span>Maze</span></h1>
-    <p class="lede">Escape three rings of a maze in one run. <strong>Every few seconds the lights die.</strong> In the dark, purple walls shift and hunters move toward any noise you make. Each step below says exactly what to click, gives the complete code, explains how it works, and tells you how to test it.</p>
+    <p class="lede">Escape three rings of a maze in one run. <strong>Every few seconds the lights die.</strong> In the dark, purple walls shift and monsters move toward any noise you make. Each step below says exactly what to click, gives the complete code, explains how it works, and tells you how to test it.</p>
 
     <div class="meter" aria-live="polite">
       <div class="meter-top">
@@ -263,7 +263,7 @@
 <div class="body">
 <p class="goal">Copy only the sprites you'll use from the 0x72 DungeonTileset II pack.</p>
 <h4>Do it</h4><ol class="do"><li>Create <code>art/0x72/</code> in the FileSystem dock.</li><li>In Finder, open <code>0x72_DungeonTilesetII_v1.7/frames/</code>.</li><li>Drag in the <code>idle_anim_f0</code>&ndash;<code>f3</code> and <code>run_anim_f0</code>&ndash;<code>f3</code> files for <code>knight_m</code>, <code>big_zombie</code>, <code>ogre</code> and <code>big_demon</code> (32 files).</li><li>Also drag in <code>floor_1</code>&ndash;<code>floor_8</code>, <code>floor_stairs</code>, <code>wall_mid</code>, <code>wall_top_mid</code>, <code>chest_full_open_anim_f0</code>, <code>flask_big_yellow</code>, <code>ui_heart_full</code>, <code>ui_heart_empty</code>.</li><li>Copy the pack's <code>README</code> in too, as <code>README_0x72.txt</code>, for credit.</li></ol>
-<h4>How it works</h4><ul class="how"><li>Godot imports each PNG automatically and makes a <code>.import</code> file next to it. Leave those alone.</li><li>The knight is 16&times;28 px; the three hunters are 32&times;36, twice a tile wide. They look big and scary in 16 px corridors on purpose.</li></ul>
+<h4>How it works</h4><ul class="how"><li>Godot imports each PNG automatically and makes a <code>.import</code> file next to it. Leave those alone.</li><li>The knight is 16&times;28 px; the three monsters are 32&times;36, twice a tile wide. They look big and scary in 16 px corridors on purpose.</li></ul>
 <p class="key"><b>Answer key:</b> art/0x72/ (48 files)</p>
 </div></li>
 </ol></section>
@@ -282,7 +282,7 @@
 
 ## The player made a sound at `pos` (running footsteps).
 signal noise_made(pos: Vector2)
-## A hunter reached the player.
+## A monster reached the player.
 signal player_caught
 ## Shifting walls changed. `cells` are the tile coordinates that changed.
 signal walls_shifted(cells: Array)
@@ -292,7 +292,7 @@ signal gate_changed(is_open: bool)
 signal item_picked(kind: String, pos: Vector2)
 ## Short message for the HUD banner.
 signal message(text: String)</code></pre>
-<h4>How it works</h4><ul class="how"><li>A hunter calls <code>Events.player_caught.emit()</code>; the level did <code>Events.player_caught.connect(_on_player_caught)</code>. Neither needs to find the other.</li><li>Signals can carry values: <code>noise_made</code> sends where the noise happened.</li></ul>
+<h4>How it works</h4><ul class="how"><li>A monster calls <code>Events.player_caught.emit()</code>; the level did <code>Events.player_caught.connect(_on_player_caught)</code>. Neither needs to find the other.</li><li>Signals can carry values: <code>noise_made</code> sends where the noise happened.</li></ul>
 <p class="key"><b>Answer key:</b> scripts/events.gd</p>
 </div></li>
 <li class="step" data-step="6">
@@ -436,7 +436,7 @@ const LEVELS := [
         "name": "Outer Ring", "difficulty": "EASY", "map": "res://levels/outer_ring.gd",
         "light": 6.0, "warning": 1.2, "dark": 2.5,
         "gate_closes_after": 6, "gate_reopens_after": 2,
-        "hunter": "big_zombie", "hunter_speed": 42.0, "hearing": 200.0,
+        "monster": "big_zombie", "monster_speed": 42.0, "hearing": 200.0,
         "map_mode": "full", "lantern_fuel": false,
         "groups": {1: 1, 2: 2},
     },
@@ -444,7 +444,7 @@ const LEVELS := [
         "name": "Inner Ring", "difficulty": "MEDIUM", "map": "res://levels/inner_ring.gd",
         "light": 5.0, "warning": 1.0, "dark": 3.0,
         "gate_closes_after": 4, "gate_reopens_after": 2,
-        "hunter": "ogre", "hunter_speed": 52.0, "hearing": 240.0,
+        "monster": "ogre", "monster_speed": 52.0, "hearing": 240.0,
         "map_mode": "pieces", "lantern_fuel": false,
         "groups": {1: 1, 2: 1, 3: 2, 4: 3},
     },
@@ -452,7 +452,7 @@ const LEVELS := [
         "name": "The Core", "difficulty": "HARD", "map": "res://levels/the_core.gd",
         "light": 4.0, "warning": 0.8, "dark": 4.0,
         "gate_closes_after": 3, "gate_reopens_after": 2,
-        "hunter": "big_demon", "hunter_speed": 62.0, "hearing": 290.0,
+        "monster": "big_demon", "monster_speed": 62.0, "hearing": 290.0,
         "map_mode": "none", "lantern_fuel": true,
         "groups": {1: 1, 2: 1, 3: 1, 4: 2},
     },
@@ -556,12 +556,12 @@ static func sprite_frames(character: String) -&gt; SpriteFrames:
 <label><input type="checkbox" id="s10"><span class="box"></span><span class="sn">10</span><span class="st">Player scene <em>(scenes/player.tscn)</em></span></label>
 <div class="body">
 <p class="goal">The runner: a physics body with a sprite, a small collision circle at the feet, and a camera.</p>
-<h4>Do it</h4><ol class="do"><li><b>Scene &rarr; New Scene</b> &rarr; <b>Other Node</b> &rarr; <code>CharacterBody2D</code>. Rename it <code>Player</code>.</li><li>Inspector: <b>Motion Mode</b> = <code>Floating</code>. Under <b>Collision</b>, Layer: only <b>2</b>; Mask: only <b>1</b>.</li><li>Node tab (next to Inspector) &rarr; <b>Groups</b> &rarr; add <code>player</code>.</li><li>Add child <code>AnimatedSprite2D</code>, name it <code>Sprite</code>, Position (0, -10).</li><li>Add child <code>CollisionShape2D</code>, name it <code>Shape</code>, Shape: New <code>CircleShape2D</code>, radius 5.</li><li>Add child <code>Camera2D</code>: Position Smoothing Enabled on, Speed 6.</li><li>Save as <code>scenes/player.tscn</code>. The two lanterns are added in step 20.</li></ol>
+<h4>Do it</h4><ol class="do"><li><b>Scene &rarr; New Scene</b> &rarr; <b>Other Node</b> &rarr; <code>CharacterBody2D</code>. Rename it <code>Player</code>.</li><li>Inspector: <b>Motion Mode</b> = <code>Floating</code>. Under <b>Collision</b>, Layer: only <b>2</b>; Mask: only <b>1</b>.</li><li>Right dock &rarr; <b>Groups</b> tab (next to Inspector and Signals) &rarr; <b>+</b> &rarr; name <code>player</code>, Global unticked &rarr; OK. A group icon appears next to Player in the Scene dock.</li><li>Add child <code>AnimatedSprite2D</code>, name it <code>Sprite</code>, Position (0, -10).</li><li>Add child <code>CollisionShape2D</code>, name it <code>Shape</code>, Shape: New <code>CircleShape2D</code>, radius 5.</li><li>Add child <code>Camera2D</code>: Position Smoothing Enabled on, Speed 6.</li><li>Save as <code>scenes/player.tscn</code>. The two lanterns are added in step 20.</li></ol>
 <pre class="tree"><code>Player (CharacterBody2D)  layer 2, mask 1, Floating, group "player"
 ├── Sprite (AnimatedSprite2D)   position (0, -10)
 ├── Shape (CollisionShape2D)    circle r = 5
 └── Camera2D                    smoothing on, speed 6</code></pre>
-<h4>How it works</h4><ul class="how"><li><b>Floating</b> motion mode is for top-down games: no floor and no gravity, so it slides along walls in any direction.</li><li>The body's origin is at the feet; the sprite is moved up 10 px so its feet line up with the circle. That keeps collisions honest in a 3/4 view.</li><li><b>Layer 2, mask 1</b>: the player sits on layer 2 and bumps into layer 1 (walls, gate). Hunters' sight rays check only layer 1, so the player's own body never blocks them.</li></ul>
+<h4>How it works</h4><ul class="how"><li><b>Floating</b> motion mode is for top-down games: no floor and no gravity, so it slides along walls in any direction.</li><li>The body's origin is at the feet; the sprite is moved up 10 px so its feet line up with the circle. That keeps collisions honest in a 3/4 view.</li><li><b>Layer 2, mask 1</b>: the player sits on layer 2 and bumps into layer 1 (walls, gate). Monsters' sight rays check only layer 1, so the player's own body never blocks them.</li></ul>
 <p class="key"><b>Answer key:</b> scenes/player.tscn</p>
 </div></li>
 <li class="step" data-step="11">
@@ -570,7 +570,7 @@ static func sprite_frames(character: String) -&gt; SpriteFrames:
 <p class="goal">Walk silently, run fast and loudly, and animate.</p>
 <h4>Do it</h4><ol class="do"><li>Select the Player root, click the script icon to attach a new script, save it as <code>scripts/player.gd</code>.</li><li>Type the variables and the two functions below. The other functions come in later steps; leave them out for now, along with the <code>@onready</code> lines for <code>lantern</code> and <code>wall_light</code> and the two lines in <code>_ready</code> that use them.</li></ol>
 <div class="codehead"><span>scripts/player.gd (top)</span></div><pre><code class="gd">extends CharacterBody2D
-## The runner. Walking is silent; running is fast but makes noise hunters can hear.
+## The runner. Walking is silent; running is fast but makes noise monsters can hear.
 
 @export var walk_speed := 70.0
 @export var run_speed := 120.0
@@ -632,7 +632,7 @@ func _physics_process(delta: float) -&gt; void:
         if _noise_t &lt;= 0.0:
             _noise_t = noise_interval
             Events.noise_made.emit(global_position)</code></pre>
-<h4>How it works</h4><ul class="how"><li><code>get_vector</code> returns a direction already normalised, so diagonals aren't faster.</li><li><code>velocity = ...</code> then <code>move_and_slide()</code> is the standard CharacterBody2D pattern: you set the speed, Godot handles walls.</li><li>Two countdown timers made from floats: <code>_step_t</code> for footstep sounds and <code>_noise_t</code> for noise pulses. Subtract <code>delta</code> each frame; when it hits zero, act and reset.</li><li>Running emits <code>Events.noise_made</code> 4 times a second. Hunters (step 27) decide if they're close enough to hear it.</li></ul>
+<h4>How it works</h4><ul class="how"><li><code>get_vector</code> returns a direction already normalised, so diagonals aren't faster.</li><li><code>velocity = ...</code> then <code>move_and_slide()</code> is the standard CharacterBody2D pattern: you set the speed, Godot handles walls.</li><li>Two countdown timers made from floats: <code>_step_t</code> for footstep sounds and <code>_noise_t</code> for noise pulses. Subtract <code>delta</code> each frame; when it hits zero, act and reset.</li><li>Running emits <code>Events.noise_made</code> 4 times a second. Monsters (step 27) decide if they're close enough to hear it.</li></ul>
 <h4>Watch out</h4><ul class="warn"><li><code>@onready var sprite: AnimatedSprite2D = $Sprite</code> only works if the child is named exactly <code>Sprite</code>.</li></ul>
 <p class="test"><b>Test:</b> Drag <code>player.tscn</code> into a temporary empty scene and press F6. The knight walks, runs with Shift and flips left and right.</p>
 <p class="key"><b>Answer key:</b> scripts/player.gd &rarr; _ready, _physics_process</p>
@@ -728,7 +728,7 @@ const MAP := """
 #...5.....#.#
 #############
 """</code></pre>
-<div class="tablewrap"><table><thead><tr><th>Char</th><th>Meaning</th></tr></thead><tbody><tr><th><code>#</code> / <code>.</code></th><td>wall / floor</td></tr><tr><th><code>@</code></th><td>player start (inside a safe room)</td></tr><tr><th><code>X</code></th><td>exit gate, on the edge</td></tr><tr><th><code>s</code></th><td>safe-room floor</td></tr><tr><th><code>h</code> <code>m</code> <code>o</code></th><td>hunter spawn, map piece, lantern oil</td></tr><tr><th><code>1</code>&ndash;<code>4</code></th><td>shifting wall of group 1&ndash;4, <b>closed</b> at the start</td></tr><tr><th><code>5</code>&ndash;<code>8</code></th><td>shifting wall of group 1&ndash;4, <b>open</b> at the start</td></tr></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th>Char</th><th>Meaning</th></tr></thead><tbody><tr><th><code>#</code> / <code>.</code></th><td>wall / floor</td></tr><tr><th><code>@</code></th><td>player start (inside a safe room)</td></tr><tr><th><code>X</code></th><td>exit gate, on the edge</td></tr><tr><th><code>s</code></th><td>safe-room floor</td></tr><tr><th><code>h</code> <code>m</code> <code>o</code></th><td>monster spawn, map piece, lantern oil</td></tr><tr><th><code>1</code>&ndash;<code>4</code></th><td>shifting wall of group 1&ndash;4, <b>closed</b> at the start</td></tr><tr><th><code>5</code>&ndash;<code>8</code></th><td>shifting wall of group 1&ndash;4, <b>open</b> at the start</td></tr></tbody></table></div>
 <h4>How it works</h4><ul class="how"><li>Storing the map as a <code>const</code> in a <code>.gd</code> file means it's exported with the game automatically. A <code>.txt</code> file would need an export filter.</li><li>In code, <code>load("res://levels/outer_ring.gd").MAP</code> reads the string.</li><li>When the group flips, closed cells open and open cells close, like a sliding wall.</li></ul>
 <h4>Watch out</h4><ul class="warn"><li>A shifting wall must never be able to cut part of the maze off. With a hand-made maze, check every on/off combination yourself. Step 39's tool does it automatically.</li></ul>
 <p class="key"><b>Answer key:</b> levels/outer_ring.gd</p>
@@ -744,28 +744,28 @@ const MAP := """
 ├── Gate (StaticBody2D)         layer 1, mask none
 │   └── Shape (CollisionShape2D)  16×16 rectangle
 ├── Items (Node2D)
-├── Hunters (Node2D)
+├── Monsters (Node2D)
 ├── Player (player.tscn instance)
 ├── Darkness (CanvasModulate)
 ├── Glow (CanvasLayer)           layer 1, Follow Viewport on
 └── HUD (hud.tscn instance)      ← added in step 39</code></pre>
-<h4>How it works</h4><ul class="how"><li>You don't set a TileSet on the two TileMapLayers in the editor; <code>level.gd</code> assigns <code>MazeTiles.build()</code> at runtime.</li><li><code>Items</code> and <code>Hunters</code> are just folders so spawned things stay tidy in the Remote tree.</li></ul>
+<h4>How it works</h4><ul class="how"><li>You don't set a TileSet on the two TileMapLayers in the editor; <code>level.gd</code> assigns <code>MazeTiles.build()</code> at runtime.</li><li><code>Items</code> and <code>Monsters</code> are just folders so spawned things stay tidy in the Remote tree.</li></ul>
 <p class="key"><b>Answer key:</b> scenes/level.tscn</p>
 </div></li>
 <li class="step" data-step="16">
 <label><input type="checkbox" id="s16"><span class="box"></span><span class="sn">16</span><span class="st">Parse the map</span></label>
 <div class="body">
 <p class="goal">Turn the text map into dictionaries the rest of the code can ask questions about.</p>
-<h4>Do it</h4><ol class="do"><li>Attach a new script <code>scripts/level.gd</code> to the <code>Level</code> root.</li><li>Type the top of the file. For now, comment out the <code>HUNTER_SCENE</code> and <code>PICKUP_SCENE</code> lines (those scenes arrive in steps 26 and 34; <code>preload</code> fails if the file doesn't exist yet) and the <code>@onready</code> line for <code>hud</code> (step 39).</li><li>Type <code>_parse</code> and <code>is_wall</code>.</li></ol>
+<h4>Do it</h4><ol class="do"><li>Attach a new script <code>scripts/level.gd</code> to the <code>Level</code> root.</li><li>Type the top of the file. For now, comment out the <code>MONSTER_SCENE</code> and <code>PICKUP_SCENE</code> lines (those scenes arrive in steps 26 and 34; <code>preload</code> fails if the file doesn't exist yet) and the <code>@onready</code> line for <code>hud</code> (step 39).</li><li>Type <code>_parse</code> and <code>is_wall</code>.</li></ol>
 <div class="codehead"><span>scripts/level.gd (top)</span></div><pre><code class="gd">extends Node2D
 ## One ring of the maze. Reads the map for Game.current_level, paints the tiles,
-## spawns the player, hunters and items, and runs the blackout rules:
+## spawns the player, monsters and items, and runs the blackout rules:
 ##   * lights die on the Phase timer
 ##   * on each blackout, some groups of walls flip (closed &lt;-&gt; open)
 ##   * the exit gate shuts after a number of blackouts, then reopens
 
 const T := 16
-const HUNTER_SCENE := preload("res://scenes/hunter.tscn")
+const MONSTER_SCENE := preload("res://scenes/monster.tscn")
 const PICKUP_SCENE := preload("res://scenes/pickup.tscn")
 const DARK_COLOR := Color(0.012, 0.012, 0.022)
 const DIRS: Array[Vector2i] = [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT]
@@ -773,7 +773,7 @@ const DIRS: Array[Vector2i] = [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vecto
 @onready var floor_layer: TileMapLayer = $Floor
 @onready var walls: TileMapLayer = $Walls
 @onready var items: Node2D = $Items
-@onready var hunters: Node2D = $Hunters
+@onready var monsters: Node2D = $Monsters
 @onready var gate: StaticBody2D = $Gate
 @onready var player: CharacterBody2D = $Player
 @onready var darkness: CanvasModulate = $Darkness
@@ -789,10 +789,10 @@ var astar := AStarGrid2D.new()
 var start_cell := Vector2i.ZERO
 var exit_cell := Vector2i.ZERO
 var gate_open := true
-var hunter_speed_mult := 1.0
+var monster_speed_mult := 1.0
 var finished := false
 
-var _spawns := []         # [char, cell] for hunters and items, filled by _parse
+var _spawns := []         # [char, cell] for monsters and items, filled by _parse
 
 var _dark_tween: Tween
 var _heartbeat_t := 0.0
@@ -957,7 +957,7 @@ func set_dark(dark: bool) -&gt; void:
     _light_tween = create_tween().set_parallel()
     _light_tween.tween_property(lantern, "energy", 1.2 if dark else 0.0, 0.3)
     _light_tween.tween_property(wall_light, "energy", 0.8 if dark else 0.0, 0.3)</code></pre>
-<h4>How it works</h4><ul class="how"><li><b>Lantern</b> lights things on light mask 1 (floor, player, hunters, items) and casts shadows from the wall occluders.</li><li>But a wall tile sits inside its own occluder, so a shadow-casting light leaves the walls themselves black.</li><li><b>WallLight</b> has no shadows and only touches light mask 2, which is just the <code>Walls</code> layer. So walls near you stay visible, while the floor only shows what's in your line of sight.</li><li>Energy is 0 in daylight. A light adds brightness, so leaving it on would make a glowing blob around you in the light.</li></ul>
+<h4>How it works</h4><ul class="how"><li><b>Lantern</b> lights things on light mask 1 (floor, player, monsters, items) and casts shadows from the wall occluders.</li><li>But a wall tile sits inside its own occluder, so a shadow-casting light leaves the walls themselves black.</li><li><b>WallLight</b> has no shadows and only touches light mask 2, which is just the <code>Walls</code> layer. So walls near you stay visible, while the floor only shows what's in your line of sight.</li><li>Energy is 0 in daylight. A light adds brightness, so leaving it on would make a glowing blob around you in the light.</li></ul>
 <p class="test"><b>Test:</b> F6: in the blackout you see a warm circle around you, and shadows stretch away from corners.</p>
 <p class="key"><b>Answer key:</b> scenes/player.tscn, scripts/player.gd &rarr; set_dark</p>
 </div></li>
@@ -1019,22 +1019,22 @@ func set_dark(dark: bool) -&gt; void:
 <li class="step" data-step="23">
 <label><input type="checkbox" id="s23"><span class="box"></span><span class="sn">23</span><span class="st">Never close a wall on someone</span></label>
 <div class="body">
-<p class="goal">If a wall would appear where the player or a hunter is standing, skip that group this time.</p>
-<h4>Do it</h4><ol class="do"><li>Type <code>_flip_is_safe</code>. Until hunters exist (step 26), the hunter loop just finds nothing.</li></ol>
+<p class="goal">If a wall would appear where the player or a monster is standing, skip that group this time.</p>
+<h4>Do it</h4><ol class="do"><li>Type <code>_flip_is_safe</code>. Until monsters exist (step 26), the monster loop just finds nothing.</li></ol>
 <div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _flip_is_safe(g: int) -&gt; bool:
     var blocked := {}
     # every tile the player's body touches
     var p := player.global_position
     for off in [Vector2(-6, -6), Vector2(6, -6), Vector2(-6, 6), Vector2(6, 6)]:
         blocked[world_to_cell(p + off)] = true
-    for h in hunters.get_children():
+    for h in monsters.get_children():
         for c in h.occupied_cells():
             blocked[c] = true
     for c in shift_cells:
         if shift_cells[c].group == g and not is_wall(c) and blocked.has(c):
             return false
     return true</code></pre>
-<h4>How it works</h4><ul class="how"><li>The player's collision circle can overlap up to four tiles, so all four corners (&plusmn;6 px) are checked.</li><li>Each hunter reports its current tile and the tile it's walking into (<code>occupied_cells()</code>, step 26).</li><li>Only cells that are open now and would close matter, hence <code>not is_wall(c)</code>.</li><li>Skipping is safe because the maze generator checked every on/off combination (step 37).</li></ul>
+<h4>How it works</h4><ul class="how"><li>The player's collision circle can overlap up to four tiles, so all four corners (&plusmn;6 px) are checked.</li><li>Each monster reports its current tile and the tile it's walking into (<code>occupied_cells()</code>, step 26).</li><li>Only cells that are open now and would close matter, hence <code>not is_wall(c)</code>.</li><li>Skipping is safe because the maze generator checked every on/off combination (step 37).</li></ul>
 <h4>Watch out</h4><ul class="warn"><li>Without this, the player gets stuck inside a wall and <code>move_and_slide</code> can't push them out.</li></ul>
 <p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _flip_is_safe</p>
 </div></li>
@@ -1078,12 +1078,12 @@ func set_dark(dark: bool) -&gt; void:
 </div></li>
 </ol></section>
 <section class="phase" id="phase-6">
-<header><span class="pn">Phase 6</span><h2>Hunters</h2><span class="pc"></span></header>
+<header><span class="pn">Phase 6</span><h2>Monsters</h2><span class="pc"></span></header>
 <ol class="steps">
 <li class="step" data-step="25">
 <label><input type="checkbox" id="s25"><span class="box"></span><span class="sn">25</span><span class="st">A pathfinding grid with AStarGrid2D</span></label>
 <div class="body">
-<p class="goal">A grid that answers "what's the shortest walkable path from here to there?" for hunters.</p>
+<p class="goal">A grid that answers "what's the shortest walkable path from here to there?" for monsters.</p>
 <h4>Do it</h4><ol class="do"><li>Type <code>_setup_astar</code>, <code>_update_astar</code> and <code>random_open_cell_near</code>.</li><li>Call <code>_setup_astar()</code> in <code>_ready</code> right after <code>_parse(...)</code>.</li><li>Uncomment the <code>_update_astar(c)</code> call in <code>_shift_walls</code>.</li></ol>
 <div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _setup_astar() -&gt; void:
     astar.region = Rect2i(Vector2i.ZERO, map_size)
@@ -1096,7 +1096,7 @@ func set_dark(dark: bool) -&gt; void:
 
 
 func _update_astar(c: Vector2i) -&gt; void:
-    # hunters can't walk through walls, into safe rooms, or out of the exit
+    # monsters can't walk through walls, into safe rooms, or out of the exit
     astar.set_point_solid(c, is_wall(c) or base[c] == "s" or base[c] == "X")
 
 
@@ -1106,21 +1106,21 @@ func random_open_cell_near(c: Vector2i, radius: int) -&gt; Vector2i:
         if astar.is_in_boundsv(t) and not astar.is_point_solid(t):
             return t
     return c</code></pre>
-<h4>How it works</h4><ul class="how"><li><code>region</code> is the map size, <code>cell_size</code> 16 px, and <code>DIAGONAL_MODE_NEVER</code> means no corner-cutting.</li><li>A <b>solid</b> point can't be walked through. Walls, safe rooms and the exit are all solid for hunters, so they never enter safe rooms or leave the maze.</li><li>When walls shift, only the changed cells need <code>set_point_solid</code> again. No re-baking needed, which is why this beats NavigationAgent2D for a tile maze.</li></ul>
+<h4>How it works</h4><ul class="how"><li><code>region</code> is the map size, <code>cell_size</code> 16 px, and <code>DIAGONAL_MODE_NEVER</code> means no corner-cutting.</li><li>A <b>solid</b> point can't be walked through. Walls, safe rooms and the exit are all solid for monsters, so they never enter safe rooms or leave the maze.</li><li>When walls shift, only the changed cells need <code>set_point_solid</code> again. No re-baking needed, which is why this beats NavigationAgent2D for a tile maze.</li></ul>
 <p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _setup_astar, _update_astar, random_open_cell_near</p>
 </div></li>
 <li class="step" data-step="26">
-<label><input type="checkbox" id="s26"><span class="box"></span><span class="sn">26</span><span class="st">Hunter scene <em>(scenes/hunter.tscn)</em></span></label>
+<label><input type="checkbox" id="s26"><span class="box"></span><span class="sn">26</span><span class="st">Monster scene <em>(scenes/monster.tscn)</em></span></label>
 <div class="body">
-<p class="goal">A hunter that knows its level, its speed and how far it can hear.</p>
-<h4>Do it</h4><ol class="do"><li>New Scene &rarr; <b>Other Node</b> &rarr; <code>Node2D</code>, named <code>Hunter</code>, in group <code>hunters</code>.</li><li>Child <code>AnimatedSprite2D</code> named <code>Sprite</code> at (0, -12).</li><li>Attach <code>scripts/hunter.gd</code>. Type the top of the file and the four functions below.</li><li>In level.gd, uncomment <code>HUNTER_SCENE</code>, type <code>_spawn</code>, and in <code>_ready</code> replace the <code>player.global_position = ...</code> line with <code>_spawn()</code>. It places the player, sets the first respawn point, and spawns hunters and items.</li></ol>
-<div class="codehead"><span>scripts/hunter.gd (top)</span></div><pre><code class="gd">extends Node2D
-## A hunter. Frozen like a statue while the lights are on. In the dark it
+<p class="goal">A monster that knows its level, its speed and how far it can hear.</p>
+<h4>Do it</h4><ol class="do"><li>New Scene &rarr; <b>Other Node</b> &rarr; <code>Node2D</code>, named <code>Monster</code>, in group <code>monsters</code>.</li><li>Child <code>AnimatedSprite2D</code> named <code>Sprite</code> at (0, -12).</li><li>Attach <code>scripts/monster.gd</code>. Type the top of the file and the four functions below.</li><li>In level.gd, uncomment <code>MONSTER_SCENE</code>, type <code>_spawn</code>, and in <code>_ready</code> replace the <code>player.global_position = ...</code> line with <code>_spawn()</code>. It places the player, sets the first respawn point, and spawns monsters and items.</li></ol>
+<div class="codehead"><span>scripts/monster.gd (top)</span></div><pre><code class="gd">extends Node2D
+## A monster. Frozen like a statue while the lights are on. In the dark it
 ## wanders, walks toward any running footsteps it hears, and chases the player
-## on sight. Hunters never enter safe rooms.
+## on sight. Monsters never enter safe rooms.
 ##
 ## Movement is tile-to-tile along paths from the level's AStarGrid2D, so
-## hunters never get stuck on corners.
+## monsters never get stuck on corners.
 
 enum S { FROZEN, WANDER, HUNT, CHASE }
 
@@ -1139,7 +1139,7 @@ var _growl_t := 3.0
 var _eyes: Node2D
 
 @onready var sprite: AnimatedSprite2D = $Sprite</code></pre>
-<div class="codehead"><span>scripts/hunter.gd</span></div><pre><code class="gd">func setup(lvl: Node, cell: Vector2i, kind: String, spd: float, hear: float) -&gt; void:
+<div class="codehead"><span>scripts/monster.gd</span></div><pre><code class="gd">func setup(lvl: Node, cell: Vector2i, kind: String, spd: float, hear: float) -&gt; void:
     level = lvl
     speed = spd
     hearing = hear
@@ -1147,7 +1147,7 @@ var _eyes: Node2D
     sprite.sprite_frames = Art.sprite_frames(kind)
     sprite.play("idle")
     sprite.speed_scale = 0.0
-    _eyes = preload("res://scripts/hunter_eyes.gd").new()
+    _eyes = preload("res://scripts/monster_eyes.gd").new()
     level.glow.add_child(_eyes)
 
     Phase.changed.connect(_on_phase)
@@ -1164,7 +1164,7 @@ func cell() -&gt; Vector2i:
     return level.world_to_cell(global_position)
 
 
-## Cells this hunter occupies or is about to step into (walls must not close on them).
+## Cells this monster occupies or is about to step into (walls must not close on them).
 func occupied_cells() -&gt; Array[Vector2i]:
     var cells: Array[Vector2i] = [cell()]
     if not path.is_empty():
@@ -1177,24 +1177,24 @@ func occupied_cells() -&gt; Array[Vector2i]:
         var kind: String = s[0]
         var c: Vector2i = s[1]
         if kind == "h":
-            var hunter := HUNTER_SCENE.instantiate()
-            hunters.add_child(hunter)
-            hunter.setup(self, c, cfg.hunter, cfg.hunter_speed, cfg.hearing)
+            var monster := MONSTER_SCENE.instantiate()
+            monsters.add_child(monster)
+            monster.setup(self, c, cfg.monster, cfg.monster_speed, cfg.hearing)
         elif (kind == "m" and cfg.map_mode == "pieces") or (kind == "o" and cfg.lantern_fuel):
             var pickup := PICKUP_SCENE.instantiate()
             pickup.kind = "map" if kind == "m" else "oil"
             pickup.position = cell_center(c)
             items.add_child(pickup)</code></pre>
-<h4>How it works</h4><ul class="how"><li>No physics body. Hunters follow grid paths, so they can't hit walls, and catching is a distance check.</li><li><code>setup()</code> is called right after <code>add_child</code>, so <code>@onready</code> variables are ready. It connects to the global signals itself.</li><li>The eyes object is made in step 31; until then, comment out the two <code>_eyes</code> lines in <code>setup</code>.</li><li>Comment out the pickup half of <code>_spawn</code> until step 34.</li></ul>
-<p class="test"><b>Test:</b> F6: hunters stand frozen in the maze as statues.</p>
-<p class="key"><b>Answer key:</b> scenes/hunter.tscn, scripts/hunter.gd &rarr; setup</p>
+<h4>How it works</h4><ul class="how"><li>No physics body. Monsters follow grid paths, so they can't hit walls, and catching is a distance check.</li><li><code>setup()</code> is called right after <code>add_child</code>, so <code>@onready</code> variables are ready. It connects to the global signals itself.</li><li>The eyes object is made in step 31; until then, comment out the two <code>_eyes</code> lines in <code>setup</code>.</li><li>Comment out the pickup half of <code>_spawn</code> until step 34.</li></ul>
+<p class="test"><b>Test:</b> F6: monsters stand frozen in the maze as statues.</p>
+<p class="key"><b>Answer key:</b> scenes/monster.tscn, scripts/monster.gd &rarr; setup</p>
 </div></li>
 <li class="step" data-step="27">
-<label><input type="checkbox" id="s27"><span class="box"></span><span class="sn">27</span><span class="st">The hunter brain</span></label>
+<label><input type="checkbox" id="s27"><span class="box"></span><span class="sn">27</span><span class="st">The monster brain</span></label>
 <div class="body">
 <p class="goal">Four states: frozen in the light, wandering in the dark, hunting a sound, chasing what it sees.</p>
 <h4>Do it</h4><ol class="do"><li>Type <code>_on_phase</code>, <code>_on_noise</code>, <code>_on_walls_shifted</code> and <code>_go</code>.</li></ol>
-<div class="codehead"><span>scripts/hunter.gd</span></div><pre><code class="gd">func _on_phase(p: Phase.P) -&gt; void:
+<div class="codehead"><span>scripts/monster.gd</span></div><pre><code class="gd">func _on_phase(p: Phase.P) -&gt; void:
     if p == Phase.P.DARK:
         state = S.WANDER
         path.clear()
@@ -1221,15 +1221,15 @@ func _go(target: Vector2i) -&gt; void:
     if not p.is_empty() and p[0] == from:
         p.remove_at(0)
     path = p</code></pre>
-<h4>How it works</h4><ul class="how"><li>This is a <b>state machine</b>: <code>state</code> holds one value from <code>enum S</code>, and each signal can move it to another.</li><li>Hearing ignores walls on purpose. Sound travels through a maze, but the hunter still has to walk the long way round.</li><li><code>astar.get_id_path(from, to, true)</code>: the <code>true</code> allows a partial path, so aiming at a safe-room tile still gets the hunter as close as possible.</li><li>The first cell of a path is where the hunter already stands, so it's removed.</li><li>After a shift, the hunter re-plans to the same destination (<code>path.back()</code>).</li></ul>
-<p class="key"><b>Answer key:</b> scripts/hunter.gd &rarr; _on_phase, _on_noise, _go</p>
+<h4>How it works</h4><ul class="how"><li>This is a <b>state machine</b>: <code>state</code> holds one value from <code>enum S</code>, and each signal can move it to another.</li><li>Hearing ignores walls on purpose. Sound travels through a maze, but the monster still has to walk the long way round.</li><li><code>astar.get_id_path(from, to, true)</code>: the <code>true</code> allows a partial path, so aiming at a safe-room tile still gets the monster as close as possible.</li><li>The first cell of a path is where the monster already stands, so it's removed.</li><li>After a shift, the monster re-plans to the same destination (<code>path.back()</code>).</li></ul>
+<p class="key"><b>Answer key:</b> scripts/monster.gd &rarr; _on_phase, _on_noise, _go</p>
 </div></li>
 <li class="step" data-step="28">
 <label><input type="checkbox" id="s28"><span class="box"></span><span class="sn">28</span><span class="st">Walk tile to tile</span></label>
 <div class="body">
 <p class="goal">Move along the path, chase on sight, catch, and growl.</p>
-<h4>Do it</h4><ol class="do"><li>Type the hunter's <code>_physics_process</code>. Until step 31, comment out the <code>_update_eyes</code> call.</li></ol>
-<div class="codehead"><span>scripts/hunter.gd</span></div><pre><code class="gd">func _physics_process(delta: float) -&gt; void:
+<h4>Do it</h4><ol class="do"><li>Type the monster's <code>_physics_process</code>. Until step 31, comment out the <code>_update_eyes</code> call.</li></ol>
+<div class="codehead"><span>scripts/monster.gd</span></div><pre><code class="gd">func _physics_process(delta: float) -&gt; void:
     var player: Node2D = level.player
     var dist := global_position.distance_to(player.global_position)
     _update_eyes(dist)
@@ -1261,7 +1261,7 @@ func _go(target: Vector2i) -&gt; void:
     if not path.is_empty():
         var target: Vector2 = level.cell_center(path[0])
         var boost := CHASE_BOOST if state == S.CHASE else 1.0
-        var step: float = speed * level.hunter_speed_mult * boost * delta
+        var step: float = speed * level.monster_speed_mult * boost * delta
         var dir := target - global_position
         if absf(dir.x) &gt; 0.1:
             sprite.flip_h = dir.x &lt; 0.0
@@ -1279,14 +1279,14 @@ func _go(target: Vector2i) -&gt; void:
     if _growl_t &lt;= 0.0:
         _growl_t = randf_range(2.5, 5.0)
         Sfx.play_at("growl", global_position, -2.0, 300.0)</code></pre>
-<h4>How it works</h4><ul class="how"><li><code>move_toward(target, step)</code> moves at most <code>step</code> pixels, so the hunter never overshoots the tile centre.</li><li>When within 0.5 px of the target tile, that tile is removed and the next becomes the target.</li><li>Frozen hunters set <code>sprite.speed_scale = 0</code>, which pauses the animation mid-frame. That's the statue effect.</li><li>Speed = base speed &times; <code>hunter_speed_mult</code> (grows when the gate shuts) &times; 1.25 while chasing.</li><li>Giving up a chase at 1.6&times; sight range (176 px), not 110, stops hunters flickering between chasing and wandering at the edge.</li></ul>
-<p class="test"><b>Test:</b> Run in the dark near a hunter. Its eyes aren't in yet, but it starts walking toward you.</p>
-<p class="key"><b>Answer key:</b> scripts/hunter.gd &rarr; _physics_process</p>
+<h4>How it works</h4><ul class="how"><li><code>move_toward(target, step)</code> moves at most <code>step</code> pixels, so the monster never overshoots the tile centre.</li><li>When within 0.5 px of the target tile, that tile is removed and the next becomes the target.</li><li>Frozen monsters set <code>sprite.speed_scale = 0</code>, which pauses the animation mid-frame. That's the statue effect.</li><li>Speed = base speed &times; <code>monster_speed_mult</code> (grows when the gate shuts) &times; 1.25 while chasing.</li><li>Giving up a chase at 1.6&times; sight range (176 px), not 110, stops monsters flickering between chasing and wandering at the edge.</li></ul>
+<p class="test"><b>Test:</b> Run in the dark near a monster. Its eyes aren't in yet, but it starts walking toward you.</p>
+<p class="key"><b>Answer key:</b> scripts/monster.gd &rarr; _physics_process</p>
 </div></li>
 <li class="step" data-step="29">
 <label><input type="checkbox" id="s29"><span class="box"></span><span class="sn">29</span><span class="st">Sight</span></label>
 <div class="body">
-<p class="goal">A hunter sees you only if no wall is in the way.</p>
+<p class="goal">A monster sees you only if no wall is in the way.</p>
 <h4>Do it</h4><ol class="do"><li>Type <code>has_line_of_sight</code> in level.gd.</li></ol>
 <div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func has_line_of_sight(from: Vector2, to: Vector2) -&gt; bool:
     var query := PhysicsRayQueryParameters2D.create(from, to, 1)
@@ -1320,16 +1320,16 @@ func _go(target: Vector2i) -&gt; void:
     velocity = Vector2.ZERO
     invulnerable = 2.0
     frozen = false</code></pre>
-<h4>How it works</h4><ul class="how"><li>Several hunters can touch you in the same frame. The first call sets <code>player.frozen</code>, and the check at the top makes every other call return.</li><li><code>await get_tree().create_timer(1.0).timeout</code> pauses this function for a second without freezing the game.</li><li><code>Game.lose_life()</code> returns true when you're out of lives; then <code>Game.finish("caught")</code> goes to the end screen.</li></ul>
-<p class="test"><b>Test:</b> In the dark, run into a hunter's path. You flash, freeze, then reappear in a teal room and blink for 2 seconds.</p>
+<h4>How it works</h4><ul class="how"><li>Several monsters can touch you in the same frame. The first call sets <code>player.frozen</code>, and the check at the top makes every other call return.</li><li><code>await get_tree().create_timer(1.0).timeout</code> pauses this function for a second without freezing the game.</li><li><code>Game.lose_life()</code> returns true when you're out of lives; then <code>Game.finish("caught")</code> goes to the end screen.</li></ul>
+<p class="test"><b>Test:</b> In the dark, run into a monster's path. You flash, freeze, then reappear in a teal room and blink for 2 seconds.</p>
 <p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _on_player_caught, scripts/player.gd &rarr; respawn</p>
 </div></li>
 <li class="step" data-step="31">
 <label><input type="checkbox" id="s31"><span class="box"></span><span class="sn">31</span><span class="st">Glowing eyes</span></label>
 <div class="body">
-<p class="goal">Two red dots that stay visible in the dark, so you can track hunters.</p>
-<h4>Do it</h4><ol class="do"><li>New script <code>scripts/hunter_eyes.gd</code>, type it.</li><li>In hunter.gd, uncomment the <code>_eyes</code> lines in <code>setup</code>, type <code>_update_eyes</code>, and call it from <code>_physics_process</code>.</li></ol>
-<div class="codehead"><span>scripts/hunter_eyes.gd</span></div><pre><code class="gd">extends Node2D
+<p class="goal">Two red dots that stay visible in the dark, so you can track monsters.</p>
+<h4>Do it</h4><ol class="do"><li>New script <code>scripts/monster_eyes.gd</code>, type it.</li><li>In monster.gd, uncomment the <code>_eyes</code> lines in <code>setup</code>, type <code>_update_eyes</code>, and call it from <code>_physics_process</code>.</li></ol>
+<div class="codehead"><span>scripts/monster_eyes.gd</span></div><pre><code class="gd">extends Node2D
 ## Two glowing red eyes drawn on the Glow layer above the darkness.
 
 var facing_left := false:
@@ -1349,22 +1349,22 @@ func _draw() -&gt; void:
     for x in [-3.0, 3.0]:
         draw_circle(Vector2(x + shift, 0), 3.0, Color(1, 0.15, 0.1, 0.25))
         draw_rect(Rect2(x + shift - 1, -0.5, 2, 1.5), Color(1, 0.35, 0.25))</code></pre>
-<div class="codehead"><span>scripts/hunter.gd</span></div><pre><code class="gd">## Glowing eyes live on a layer the darkness doesn't touch, so you can spot
-## hunters in the dark (and see when they freeze).
+<div class="codehead"><span>scripts/monster.gd</span></div><pre><code class="gd">## Glowing eyes live on a layer the darkness doesn't touch, so you can spot
+## monsters in the dark (and see when they freeze).
 func _update_eyes(dist: float) -&gt; void:
     if not is_instance_valid(_eyes):
         return
     _eyes.global_position = global_position + Vector2(0, -20)
     _eyes.visible = Phase.phase != Phase.P.LIGHT and dist &lt; 240.0
     _eyes.facing_left = sprite.flip_h</code></pre>
-<h4>How it works</h4><ul class="how"><li>The darkness is a CanvasModulate on the main canvas. It doesn't affect other <b>CanvasLayers</b>, so eyes drawn on <code>Glow</code> stay bright.</li><li><b>Follow Viewport</b> makes the Glow layer scroll with the camera, so world positions line up.</li><li>The eyes aren't children of the hunter (they live on another layer), so the hunter frees them in <code>_exit_tree</code>.</li><li>A setter on <code>facing_left</code> calls <code>queue_redraw()</code> only when the value changes.</li></ul>
+<h4>How it works</h4><ul class="how"><li>The darkness is a CanvasModulate on the main canvas. It doesn't affect other <b>CanvasLayers</b>, so eyes drawn on <code>Glow</code> stay bright.</li><li><b>Follow Viewport</b> makes the Glow layer scroll with the camera, so world positions line up.</li><li>The eyes aren't children of the monster (they live on another layer), so the monster frees them in <code>_exit_tree</code>.</li><li>A setter on <code>facing_left</code> calls <code>queue_redraw()</code> only when the value changes.</li></ul>
 <p class="test"><b>Test:</b> In the dark, pairs of red eyes appear and freeze when the lights come back.</p>
-<p class="key"><b>Answer key:</b> scripts/hunter_eyes.gd, scripts/hunter.gd &rarr; _update_eyes</p>
+<p class="key"><b>Answer key:</b> scripts/monster_eyes.gd, scripts/monster.gd &rarr; _update_eyes</p>
 </div></li>
 <li class="step" data-step="32">
 <label><input type="checkbox" id="s32"><span class="box"></span><span class="sn">32</span><span class="st">Growls, heartbeat and safe rooms</span></label>
 <div class="body">
-<p class="goal">Hear hunters before you see them, and know when you're safe.</p>
+<p class="goal">Hear monsters before you see them, and know when you're safe.</p>
 <h4>Do it</h4><ol class="do"><li>Type the level's <code>_physics_process</code>. Comment out the fuel and exit parts until steps 36 and 38.</li></ol>
 <div class="codehead"><span>scripts/level.gd</span></div><pre><code class="gd">func _physics_process(delta: float) -&gt; void:
     if finished:
@@ -1384,16 +1384,16 @@ func _update_eyes(dist: float) -&gt; void:
         _complete()
         return
 
-    # heartbeat when a moving hunter is close
+    # heartbeat when a moving monster is close
     _heartbeat_t -= delta
     if Phase.is_dark() and _heartbeat_t &lt;= 0.0:
         var nearest := INF
-        for h in hunters.get_children():
+        for h in monsters.get_children():
             nearest = minf(nearest, h.global_position.distance_to(player.global_position))
         if nearest &lt; 120.0:
             Sfx.play("heartbeat", lerpf(0.0, -14.0, nearest / 120.0))
             _heartbeat_t = lerpf(0.45, 1.0, nearest / 120.0)</code></pre>
-<h4>How it works</h4><ul class="how"><li>Growls come from each hunter's <code>_physics_process</code> via <code>Sfx.play_at</code>, every 2.5&ndash;5 s.</li><li>The heartbeat finds the nearest hunter. Under 120 px it plays, louder and faster the closer it is: <code>lerpf(0.45, 1.0, nearest / 120.0)</code> seconds between beats.</li><li>Safe rooms need no Area2D: if the player's tile is <code>"s"</code>, they're safe and that tile becomes the respawn point.</li><li><code>_was_safe</code> remembers last frame, so "SAFE ROOM" only shows when you walk in.</li></ul>
+<h4>How it works</h4><ul class="how"><li>Growls come from each monster's <code>_physics_process</code> via <code>Sfx.play_at</code>, every 2.5&ndash;5 s.</li><li>The heartbeat finds the nearest monster. Under 120 px it plays, louder and faster the closer it is: <code>lerpf(0.45, 1.0, nearest / 120.0)</code> seconds between beats.</li><li>Safe rooms need no Area2D: if the player's tile is <code>"s"</code>, they're safe and that tile becomes the respawn point.</li><li><code>_was_safe</code> remembers last frame, so "SAFE ROOM" only shows when you walk in.</li></ul>
 <p class="key"><b>Answer key:</b> scripts/level.gd &rarr; _physics_process</p>
 </div></li>
 </ol></section>
@@ -1403,7 +1403,7 @@ func _update_eyes(dist: float) -&gt; void:
 <li class="step" data-step="33">
 <label><input type="checkbox" id="s33"><span class="box"></span><span class="sn">33</span><span class="st">The exit gate</span></label>
 <div class="body">
-<p class="goal">An exit that shuts after a few blackouts, reopens later, and makes hunters faster each time it shuts.</p>
+<p class="goal">An exit that shuts after a few blackouts, reopens later, and makes monsters faster each time it shuts.</p>
 <h4>Do it</h4><ol class="do"><li>Attach <code>scripts/gate.gd</code> to the Gate node and type it.</li><li>In level.gd, type <code>_update_gate</code> and <code>blackouts_until_gate_change</code>. In <code>_ready</code>, add <code>gate.position = cell_center(exit_cell)</code> and <code>gate.set_open(true, true)</code>. Uncomment <code>_update_gate()</code> in <code>_on_phase</code>.</li></ol>
 <div class="codehead"><span>scripts/gate.gd</span></div><pre><code class="gd">extends StaticBody2D
 ## The exit gate. Blocks the exit tile while shut; the level opens and closes
@@ -1456,8 +1456,8 @@ func _draw() -&gt; void:
     if open:
         Events.message.emit("THE GATE IS OPEN")
     else:
-        hunter_speed_mult = minf(hunter_speed_mult * 1.15, 1.6)
-        Events.message.emit("THE GATE HAS SHUT  -  HUNTERS GROW FASTER")
+        monster_speed_mult = minf(monster_speed_mult * 1.15, 1.6)
+        Events.message.emit("THE GATE HAS SHUT  -  MONSTERS GROW FASTER")
 
 
 ## Number of blackouts until the gate changes state (for the HUD).
@@ -1609,7 +1609,7 @@ func _draw() -&gt; void:
 <div class="body">
 <p class="goal">Three real mazes that get bigger and harder, and can never trap you.</p>
 <h4>Do it</h4><ol class="do"><li>Copy <code>tools/make_mazes.py</code> from the answer key and run <code>python3 tools/make_mazes.py</code>. It overwrites your test maze and writes <code>inner_ring.gd</code> and <code>the_core.gd</code>.</li><li>Open the files and look. You can hand-edit any of them.</li></ol>
-<div class="tablewrap"><table><thead><tr><th></th><th>Outer Ring</th><th>Inner Ring</th><th>The Core</th></tr></thead><tbody><tr><th>Size</th><td>45&times;27</td><td>49&times;29</td><td>55&times;31</td></tr><tr><th>Hunters</th><td>1</td><td>3</td><td>6</td></tr><tr><th>Shift groups &times; cells</th><td>2 &times; 7</td><td>4 &times; 9</td><td>4 &times; 14</td></tr><tr><th>Extra safe rooms</th><td>2</td><td>2</td><td>1</td></tr><tr><th>Items</th><td>none</td><td>4 map pieces</td><td>5 oil</td></tr></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th></th><th>Outer Ring</th><th>Inner Ring</th><th>The Core</th></tr></thead><tbody><tr><th>Size</th><td>45&times;27</td><td>49&times;29</td><td>55&times;31</td></tr><tr><th>Monsters</th><td>1</td><td>3</td><td>6</td></tr><tr><th>Shift groups &times; cells</th><td>2 &times; 7</td><td>4 &times; 9</td><td>4 &times; 14</td></tr><tr><th>Extra safe rooms</th><td>2</td><td>2</td><td>1</td></tr><tr><th>Items</th><td>none</td><td>4 map pieces</td><td>5 oil</td></tr></tbody></table></div>
 <h4>How it works</h4><ul class="how"><li>It carves a perfect maze with a depth-first "recursive backtracker", then knocks out some walls to make loops (alternative routes).</li><li>It places a 5&times;5 safe room in the centre, extra 3&times;3 safe rooms far apart, and the exit at the edge tile farthest from the start.</li><li>For each candidate shifting wall it tests <b>every</b> on/off combination of all groups (up to 16) with a flood fill, and keeps the wall only if all floor still connects to the exit.</li></ul>
 <p class="key"><b>Answer key:</b> levels/*.gd, tools/make_mazes.py</p>
 </div></li>
@@ -1834,9 +1834,9 @@ func _toggle_pause() -&gt; void:
 func _quit_to_title() -&gt; void:
     get_tree().paused = false
     Game.to_title()</code></pre>
-<h4>How it works</h4><ul class="how"><li><code>get_tree().paused = true</code> stops every node whose process mode is <b>Inherit</b> (the default): the level, hunters, player, and the Phase timer.</li><li>The HUD sets <code>process_mode = PROCESS_MODE_ALWAYS</code> in <code>_ready</code>, so it keeps receiving input and can unpause.</li><li><code>_unhandled_input</code> only gets keys that no button or other UI already used, and <code>set_input_as_handled()</code> stops them going further.</li></ul>
+<h4>How it works</h4><ul class="how"><li><code>get_tree().paused = true</code> stops every node whose process mode is <b>Inherit</b> (the default): the level, monsters, player, and the Phase timer.</li><li>The HUD sets <code>process_mode = PROCESS_MODE_ALWAYS</code> in <code>_ready</code>, so it keeps receiving input and can unpause.</li><li><code>_unhandled_input</code> only gets keys that no button or other UI already used, and <code>set_input_as_handled()</code> stops them going further.</li></ul>
 <h4>Watch out</h4><ul class="warn"><li>Unpause before changing scenes (<code>_quit_to_title</code> does), or the next scene starts frozen.</li></ul>
-<p class="test"><b>Test:</b> Press P in the dark: hunters, timer and footsteps all stop. P again resumes.</p>
+<p class="test"><b>Test:</b> Press P in the dark: monsters, timer and footsteps all stop. P again resumes.</p>
 <p class="key"><b>Answer key:</b> scripts/hud.gd &rarr; _toggle_pause</p>
 </div></li>
 <li class="step" data-step="41">
@@ -1928,7 +1928,7 @@ func _ready() -&gt; void:
 /Users/bt/Downloads/Godot.app/Contents/MacOS/Godot --headless --path . --script res://tests/smoke_test.gd -- die</code></pre>
 <div class="codehead"><span>tests/smoke_test.gd</span></div><pre><code class="gd">extends SceneTree
 ## Headless smoke test: plays through all three rings with a sped-up blackout
-## cycle, walks the player around, lets hunters catch them, and checks the
+## cycle, walks the player around, lets monsters catch them, and checks the
 ## run reaches the end screen.
 ##   Godot --headless --path . --script res://tests/smoke_test.gd
 
@@ -1983,18 +1983,18 @@ func _process(_delta: float) -&gt; bool:
             var pc = scene.world_to_cell(player.global_position)
             if scene.is_wall(pc):
                 problems.append("player inside wall at %s (level %d)" % [pc, game.current_level])
-            for h in scene.hunters.get_children():
+            for h in scene.monsters.get_children():
                 var hc = h.cell()
                 if scene.is_wall(hc):
-                    problems.append("hunter inside wall at %s" % hc)
-        # after a while, let a hunter reach the player once per level
+                    problems.append("monster inside wall at %s" % hc)
+        # after a while, let a monster reach the player once per level
         if frames % 300 == 150 or (die_mode and frames % 60 == 0):
             want_catch = true
-        if die_mode and want_catch and phase.is_dark() and player.is_safe and scene.hunters.get_child_count() &gt; 0:
-            player.global_position = scene.hunters.get_child(0).global_position
-        if want_catch and phase.is_dark() and scene.hunters.get_child_count() &gt; 0 \
+        if die_mode and want_catch and phase.is_dark() and player.is_safe and scene.monsters.get_child_count() &gt; 0:
+            player.global_position = scene.monsters.get_child(0).global_position
+        if want_catch and phase.is_dark() and scene.monsters.get_child_count() &gt; 0 \
                 and not player.is_safe and player.invulnerable &lt;= 0.0 and not player.frozen:
-            var h = scene.hunters.get_child(0)
+            var h = scene.monsters.get_child(0)
             h.global_position = player.global_position + Vector2(4, 0)
             want_catch = false
         # then teleport to the exit when the gate is open
@@ -2018,7 +2018,7 @@ func _report() -&gt; void:
     print("frames=", frames, " levels_seen=", levels_seen.keys(), " phases=", phase_counts,
         " wall_shifts=", shifts, " caught_signals=", caught)
     print("problems: ", problems if problems else "none")</code></pre>
-<h4>How it works</h4><ul class="how"><li>A script that <code>extends SceneTree</code> replaces Godot's main loop. <code>_process</code> returning true quits.</li><li>It speeds up the blackout timer to 0.4 s, walks in a square, runs half the time, puts a hunter next to the player now and then, and teleports to the exit when the gate is open.</li><li>Every 30 frames it checks that neither the player nor any hunter is inside a wall.</li><li>With <code>-- die</code> it keeps getting caught to test the game-over path.</li></ul>
+<h4>How it works</h4><ul class="how"><li>A script that <code>extends SceneTree</code> replaces Godot's main loop. <code>_process</code> returning true quits.</li><li>It speeds up the blackout timer to 0.4 s, walks in a square, runs half the time, puts a monster next to the player now and then, and teleports to the exit when the gate is open.</li><li>Every 30 frames it checks that neither the player nor any monster is inside a wall.</li><li>With <code>-- die</code> it keeps getting caught to test the game-over path.</li></ul>
 <h4>Watch out</h4><ul class="warn"><li>Autoloads aren't in the tree yet during <code>_initialize()</code>, so the run starts on the first <code>_process</code> frame. The first version of this test crashed for exactly that reason.</li></ul>
 <p class="test"><b>Test:</b> Expected: <code>END: result=escaped</code> with <code>problems: none</code>; with <code>-- die</code>, <code>result=caught lives=0</code>.</p>
 <p class="key"><b>Answer key:</b> tests/smoke_test.gd</p>
@@ -2086,8 +2086,8 @@ func _shot(shot_name: String) -&gt; void:
 <label><input type="checkbox" id="s45"><span class="box"></span><span class="sn">45</span><span class="st">Play it and tune it</span></label>
 <div class="body">
 <p class="goal">Make it feel right. This is the step that makes it your game.</p>
-<h4>Do it</h4><ol class="do"><li>Play each ring at least twice. Write down one thing that felt too easy and one that felt unfair.</li><li>Change only numbers in <code>LEVELS</code> first: phase times, hunter speed, hearing, when the gate shuts.</li><li>Then add a twist of your own: a new hunter type, a lever that freezes walls, a sprint stamina bar, a different end-screen message.</li></ol>
-<h4>How it works</h4><ul class="how"><li>Small changes matter: hunter speed 52 vs 58 is the difference between "I can outwalk the ogre" and "I must run", and running makes noise.</li><li>Rerun the smoke test after every change to catch anything you broke.</li></ul>
+<h4>Do it</h4><ol class="do"><li>Play each ring at least twice. Write down one thing that felt too easy and one that felt unfair.</li><li>Change only numbers in <code>LEVELS</code> first: phase times, monster speed, hearing, when the gate shuts.</li><li>Then add a twist of your own: a new monster type, a lever that freezes walls, a sprint stamina bar, a different end-screen message.</li></ol>
+<h4>How it works</h4><ul class="how"><li>Small changes matter: monster speed 52 vs 58 is the difference between "I can outwalk the ogre" and "I must run", and running makes noise.</li><li>Rerun the smoke test after every change to catch anything you broke.</li></ul>
 </div></li>
 <li class="step" data-step="46">
 <label><input type="checkbox" id="s46"><span class="box"></span><span class="sn">46</span><span class="st">Export</span></label>

@@ -42,8 +42,11 @@ func setup(lvl: Node) -> void:
 
 
 func refresh() -> void:
+	# one heart per starting life; extra heart slots in the scene stay hidden
 	for i in hearts.get_child_count():
-		hearts.get_child(i).texture = HEART_FULL if i < Game.lives else HEART_EMPTY
+		var heart: TextureRect = hearts.get_child(i)
+		heart.visible = i < Game.START_LIVES
+		heart.texture = HEART_FULL if i < Game.lives else HEART_EMPTY
 	if level == null:
 		return
 	if level.cfg.map_mode == "pieces":

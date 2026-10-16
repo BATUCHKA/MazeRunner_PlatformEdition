@@ -1,5 +1,5 @@
 extends CharacterBody2D
-## The runner. Walking is silent; running is fast but makes noise hunters can hear.
+## The runner. Walking is silent; running is fast but makes noise monsters can hear.
 
 @export var walk_speed := 70.0
 @export var run_speed := 120.0

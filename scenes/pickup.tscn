@@ -1,16 +1,16 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://c068n6838pgcj"]
 
-[ext_resource type="Script" path="res://scripts/pickup.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://c6ew8pnuylrw" path="res://scripts/pickup.gd" id="1_script"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_pickup"]
 radius = 7.0
 
-[node name="Pickup" type="Area2D"]
+[node name="Pickup" type="Area2D" unique_id=835576555]
 collision_layer = 0
 collision_mask = 2
 script = ExtResource("1_script")
 
-[node name="Sprite" type="Sprite2D" parent="."]
+[node name="Sprite" type="Sprite2D" parent="." unique_id=527572895]
 
-[node name="Shape" type="CollisionShape2D" parent="."]
+[node name="Shape" type="CollisionShape2D" parent="." unique_id=950338534]
 shape = SubResource("CircleShape2D_pickup")

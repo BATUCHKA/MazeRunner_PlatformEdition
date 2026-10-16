@@ -18,7 +18,7 @@ func _initialize() -> void:
 		[1, func(): _shot("title")],
 		[1, func(): root.get_node("Game").new_run()],
 	]
-	for ring in 3:
+	for ring in root.get_node("Game").LEVELS.size():
 		steps += [
 			[30, func(): Input.action_press("move_right")],
 			[25, func(): Input.action_release("move_right")],

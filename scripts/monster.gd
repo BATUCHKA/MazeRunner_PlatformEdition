@@ -1,10 +1,10 @@
 extends Node2D
-## A hunter. Frozen like a statue while the lights are on. In the dark it
+## A monster. Frozen like a statue while the lights are on. In the dark it
 ## wanders, walks toward any running footsteps it hears, and chases the player
-## on sight. Hunters never enter safe rooms.
+## on sight. Monsters never enter safe rooms.
 ##
 ## Movement is tile-to-tile along paths from the level's AStarGrid2D, so
-## hunters never get stuck on corners.
+## monsters never get stuck on corners.
 
 enum S { FROZEN, WANDER, HUNT, CHASE }
 
@@ -33,7 +33,7 @@ func setup(lvl: Node, cell: Vector2i, kind: String, spd: float, hear: float) -> 
 	sprite.sprite_frames = Art.sprite_frames(kind)
 	sprite.play("idle")
 	sprite.speed_scale = 0.0
-	_eyes = preload("res://scripts/hunter_eyes.gd").new()
+	_eyes = preload("res://scripts/monster_eyes.gd").new()
 	level.glow.add_child(_eyes)
 
 	Phase.changed.connect(_on_phase)
@@ -50,7 +50,7 @@ func cell() -> Vector2i:
 	return level.world_to_cell(global_position)
 
 
-## Cells this hunter occupies or is about to step into (walls must not close on them).
+## Cells this monster occupies or is about to step into (walls must not close on them).
 func occupied_cells() -> Array[Vector2i]:
 	var cells: Array[Vector2i] = [cell()]
 	if not path.is_empty():
@@ -119,7 +119,7 @@ func _physics_process(delta: float) -> void:
 	if not path.is_empty():
 		var target: Vector2 = level.cell_center(path[0])
 		var boost := CHASE_BOOST if state == S.CHASE else 1.0
-		var step: float = speed * level.hunter_speed_mult * boost * delta
+		var step: float = speed * level.monster_speed_mult * boost * delta
 		var dir := target - global_position
 		if absf(dir.x) > 0.1:
 			sprite.flip_h = dir.x < 0.0
@@ -140,7 +140,7 @@ func _physics_process(delta: float) -> void:
 
 
 ## Glowing eyes live on a layer the darkness doesn't touch, so you can spot
-## hunters in the dark (and see when they freeze).
+## monsters in the dark (and see when they freeze).
 func _update_eyes(dist: float) -> void:
 	if not is_instance_valid(_eyes):
 		return

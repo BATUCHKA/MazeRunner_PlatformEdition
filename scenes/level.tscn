@@ -25,7 +25,7 @@ shape = SubResource("RectangleShape2D_gate")
 
 [node name="Items" type="Node2D" parent="." unique_id=1361657295]
 
-[node name="Hunters" type="Node2D" parent="." unique_id=478376006]
+[node name="Monsters" type="Node2D" parent="." unique_id=478376006]
 
 [node name="Player" parent="." unique_id=2120415562 instance=ExtResource("3_player")]
 

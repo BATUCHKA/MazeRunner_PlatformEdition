@@ -1,6 +1,6 @@
 extends SceneTree
-## Headless smoke test: plays through all three rings with a sped-up blackout
-## cycle, walks the player around, lets hunters catch them, and checks the
+## Headless smoke test: plays through all four rings with a sped-up blackout
+## cycle, walks the player around, lets monsters catch them, and checks the
 ## run reaches the end screen.
 ##   Godot --headless --path . --script res://tests/smoke_test.gd
 
@@ -55,18 +55,18 @@ func _process(_delta: float) -> bool:
 			var pc = scene.world_to_cell(player.global_position)
 			if scene.is_wall(pc):
 				problems.append("player inside wall at %s (level %d)" % [pc, game.current_level])
-			for h in scene.hunters.get_children():
+			for h in scene.monsters.get_children():
 				var hc = h.cell()
 				if scene.is_wall(hc):
-					problems.append("hunter inside wall at %s" % hc)
-		# after a while, let a hunter reach the player once per level
+					problems.append("monster inside wall at %s" % hc)
+		# after a while, let a monster reach the player once per level
 		if frames % 300 == 150 or (die_mode and frames % 60 == 0):
 			want_catch = true
-		if die_mode and want_catch and phase.is_dark() and player.is_safe and scene.hunters.get_child_count() > 0:
-			player.global_position = scene.hunters.get_child(0).global_position
-		if want_catch and phase.is_dark() and scene.hunters.get_child_count() > 0 \
+		if die_mode and want_catch and phase.is_dark() and player.is_safe and scene.monsters.get_child_count() > 0:
+			player.global_position = scene.monsters.get_child(0).global_position
+		if want_catch and phase.is_dark() and scene.monsters.get_child_count() > 0 \
 				and not player.is_safe and player.invulnerable <= 0.0 and not player.frozen:
-			var h = scene.hunters.get_child(0)
+			var h = scene.monsters.get_child(0)
 			h.global_position = player.global_position + Vector2(4, 0)
 			want_catch = false
 		# then teleport to the exit when the gate is open

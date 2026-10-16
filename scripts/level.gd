@@ -1,12 +1,12 @@
 extends Node2D
 ## One ring of the maze. Reads the map for Game.current_level, paints the tiles,
-## spawns the player, hunters and items, and runs the blackout rules:
+## spawns the player, monsters and items, and runs the blackout rules:
 ##   * lights die on the Phase timer
 ##   * on each blackout, some groups of walls flip (closed <-> open)
 ##   * the exit gate shuts after a number of blackouts, then reopens
 
 const T := 16
-const HUNTER_SCENE := preload("res://scenes/hunter.tscn")
+const MONSTER_SCENE := preload("res://scenes/monster.tscn")
 const PICKUP_SCENE := preload("res://scenes/pickup.tscn")
 const DARK_COLOR := Color(0.012, 0.012, 0.022)
 const DIRS: Array[Vector2i] = [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT]
@@ -14,7 +14,7 @@ const DIRS: Array[Vector2i] = [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vecto
 @onready var floor_layer: TileMapLayer = $Floor
 @onready var walls: TileMapLayer = $Walls
 @onready var items: Node2D = $Items
-@onready var hunters: Node2D = $Hunters
+@onready var monsters: Node2D = $Monsters
 @onready var gate: StaticBody2D = $Gate
 @onready var player: CharacterBody2D = $Player
 @onready var darkness: CanvasModulate = $Darkness
@@ -30,10 +30,10 @@ var astar := AStarGrid2D.new()
 var start_cell := Vector2i.ZERO
 var exit_cell := Vector2i.ZERO
 var gate_open := true
-var hunter_speed_mult := 1.0
+var monster_speed_mult := 1.0
 var finished := false
 
-var _spawns := []         # [char, cell] for hunters and items, filled by _parse
+var _spawns := []         # [char, cell] for monsters and items, filled by _parse
 
 var _dark_tween: Tween
 var _heartbeat_t := 0.0
@@ -129,7 +129,7 @@ func _setup_astar() -> void:
 
 
 func _update_astar(c: Vector2i) -> void:
-	# hunters can't walk through walls, into safe rooms, or out of the exit
+	# monsters can't walk through walls, into safe rooms, or out of the exit
 	astar.set_point_solid(c, is_wall(c) or base[c] == "s" or base[c] == "X")
 
 
@@ -166,9 +166,9 @@ func _spawn() -> void:
 		var kind: String = s[0]
 		var c: Vector2i = s[1]
 		if kind == "h":
-			var hunter := HUNTER_SCENE.instantiate()
-			hunters.add_child(hunter)
-			hunter.setup(self, c, cfg.hunter, cfg.hunter_speed, cfg.hearing)
+			var monster := MONSTER_SCENE.instantiate()
+			monsters.add_child(monster)
+			monster.setup(self, c, cfg.monster, cfg.monster_speed, cfg.hearing)
 		elif (kind == "m" and cfg.map_mode == "pieces") or (kind == "o" and cfg.lantern_fuel):
 			var pickup := PICKUP_SCENE.instantiate()
 			pickup.kind = "map" if kind == "m" else "oil"
@@ -176,7 +176,7 @@ func _spawn() -> void:
 			items.add_child(pickup)
 
 
-# ---------------------------------------------------------------- helpers used by hunters/HUD
+# ---------------------------------------------------------------- helpers used by monsters/HUD
 
 func cell_center(c: Vector2i) -> Vector2:
 	return Vector2(c) * T + Vector2(T / 2.0, T / 2.0)
@@ -228,11 +228,11 @@ func _physics_process(delta: float) -> void:
 		_complete()
 		return
 
-	# heartbeat when a moving hunter is close
+	# heartbeat when a moving monster is close
 	_heartbeat_t -= delta
 	if Phase.is_dark() and _heartbeat_t <= 0.0:
 		var nearest := INF
-		for h in hunters.get_children():
+		for h in monsters.get_children():
 			nearest = minf(nearest, h.global_position.distance_to(player.global_position))
 		if nearest < 120.0:
 			Sfx.play("heartbeat", lerpf(0.0, -14.0, nearest / 120.0))
@@ -310,7 +310,7 @@ func _flip_is_safe(g: int) -> bool:
 	var p := player.global_position
 	for off in [Vector2(-6, -6), Vector2(6, -6), Vector2(-6, 6), Vector2(6, 6)]:
 		blocked[world_to_cell(p + off)] = true
-	for h in hunters.get_children():
+	for h in monsters.get_children():
 		for c in h.occupied_cells():
 			blocked[c] = true
 	for c in shift_cells:
@@ -331,8 +331,8 @@ func _update_gate() -> void:
 	if open:
 		Events.message.emit("THE GATE IS OPEN")
 	else:
-		hunter_speed_mult = minf(hunter_speed_mult * 1.15, 1.6)
-		Events.message.emit("THE GATE HAS SHUT  -  HUNTERS GROW FASTER")
+		monster_speed_mult = minf(monster_speed_mult * 1.15, 1.6)
+		Events.message.emit("THE GATE HAS SHUT  -  MONSTERS GROW FASTER")
 
 
 func _dust(pos: Vector2) -> void:

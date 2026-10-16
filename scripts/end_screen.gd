@@ -11,7 +11,10 @@ func _ready() -> void:
 	var t := int(Game.run_time)
 	var lines := []
 	if escaped:
-		lines.append("All three rings cleared.")
+		if Game.start_level == 0:
+			lines.append("All %d rings cleared." % Game.LEVELS.size())
+		else:
+			lines.append("Cleared %s to the end." % Game.LEVELS[Game.start_level].name)
 	else:
 		lines.append("Taken in %s." % ring)
 	lines.append("Time  %d:%02d" % [t / 60, t % 60])
